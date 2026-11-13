@@ -1,4 +1,4 @@
-//! 岛仔表情：按场景播放，隐藏时暂停，日常动作之间留出安静时间。
+//! 椰岛仔表情：按场景播放，隐藏时暂停，日常动作之间留出安静时间。
 //! 每个表情单独一张 144×1440 的序列图（16 帧 × 3 倍密度），只解码、上传正在播放的那一张，播完即释放。
 use crate::pet::PetState;
 use crate::paint::Card;
@@ -99,7 +99,7 @@ impl Expressions {
             if let Some(palette)=palette {for pixel in &mut image.pixels {if pixel.a()>0 {*pixel=crate::skin_paint::map_color(*pixel,&palette);}}}
             if let Some((previous,previous_palette,texture))=&mut self.sheet {*previous=expression;*previous_palette=palette;texture.set(image,egui::TextureOptions::LINEAR);}
             else {
-                let texture=c.ui.ctx().load_texture("daozai-expressions",image,egui::TextureOptions::LINEAR);
+                let texture=c.ui.ctx().load_texture("ye-daozai-expressions",image,egui::TextureOptions::LINEAR);
                 crate::skin_paint::mark_colored(texture.id());self.sheet=Some((expression,palette,texture));
             }
         }

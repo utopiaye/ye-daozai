@@ -796,7 +796,7 @@ mod tests {
     fn weather_late_results_do_not_restore_disabled_or_changed_locations(){
         for (city,enabled) in [("杭州",false),("北京",true)] {
             let (tx,rx)=mpsc::channel();
-            let path=std::env::temp_dir().join(format!("daozai-weather-discard-{}-{enabled}.json",std::process::id()));
+            let path=std::env::temp_dir().join(format!("ye-daozai-weather-discard-{}-{enabled}.json",std::process::id()));
             let mut state=State{snapshot:Some(Snapshot{place:"上次天气".into(),..Default::default()}),
                 loading:true,last_city:Some("杭州".into()),rx:Some((rx,false)),cache:Some(path.clone()),..Default::default()};
             tx.send(Ok(Snapshot{place:"杭州".into(),..Default::default()})).unwrap();

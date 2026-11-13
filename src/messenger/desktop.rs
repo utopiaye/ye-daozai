@@ -125,7 +125,7 @@ mod tests{
         let started=process_started(GetCurrentProcess()).unwrap();
         for (client,class) in [(Messenger::WeCom,w!("WeWorkWindow")),(Messenger::Feishu,w!("Chrome_WidgetWin_1")),(Messenger::DingTalk,w!("Qt51511QWindowIcon")),(Messenger::DingTalk,w!("StandardFrame_DingTalk"))]{
             RegisterClassW(&WNDCLASSW{lpfnWndProc:Some(proc),hInstance:instance,lpszClassName:class,..Default::default()});
-            let create=||CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("Daozai synthetic client"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
+            let create=||CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("YeDaozai synthetic client"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
             let first=create();let original=Target{unread:Unread{source:client,pid,window:first.0 as isize},started};
             assert!(ready_with_paths(original,&paths),"唯一原窗口必须可识别");
             assert_eq!(flash_target(client,first,&paths),Some(original.unread));

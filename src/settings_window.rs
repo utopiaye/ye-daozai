@@ -122,7 +122,7 @@ mod tests {
     }
     #[test]
     fn settings_window_records_normal_geometry_and_writes_only_at_close(){
-        let path=std::env::temp_dir().join(format!("daozai-settings-window-{}.json",std::process::id()));
+        let path=std::env::temp_dir().join(format!("ye-daozai-settings-window-{}.json",std::process::id()));
         let mut state=State{path:Some(path.clone()),..Default::default()};assert!(state.open());assert!(!state.open());
         let ctx=egui::Context::default();let id=egui::ViewportId::from_hash_of("settings-memory-test");
         let observe=|state:&mut State,minimized,maximized|{
@@ -137,7 +137,7 @@ mod tests {
     }
     #[test]
     fn invalid_window_records_fall_back_without_rewriting_them(){
-        let path=std::env::temp_dir().join(format!("daozai-invalid-window-{}.json",std::process::id()));
+        let path=std::env::temp_dir().join(format!("ye-daozai-invalid-window-{}.json",std::process::id()));
         for bytes in [b"invalid".to_vec(),b"{\"position\":[0,0],\"size\":[-1,560]}".to_vec(),vec![b' ';4097]]{
             std::fs::write(&path,&bytes).unwrap();let state=State::load_at(path.clone());assert!(state.saved.is_none());drop(state);
             assert_eq!(std::fs::read(&path).unwrap(),bytes);

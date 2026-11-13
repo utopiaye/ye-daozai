@@ -1,5 +1,5 @@
 #pragma code_page(65001)
-1 ICON "assets/daozai.ico"
+1 ICON "assets/ye-daozai.ico"
 1 VERSIONINFO
  FILEVERSION 0,6,64,0
  PRODUCTVERSION 0,6,64,0
@@ -13,10 +13,10 @@ BEGIN
     BEGIN
         BLOCK "080404b0"
         BEGIN
-            VALUE "FileDescription", "岛仔"
-            VALUE "InternalName", "Daozai"
-            VALUE "OriginalFilename", "daozai.exe"
-            VALUE "ProductName", "岛仔 Daozai"
+            VALUE "FileDescription", "椰岛仔"
+            VALUE "InternalName", "YeDaozai"
+            VALUE "OriginalFilename", "ye-daozai.exe"
+            VALUE "ProductName", "椰岛仔 ye-daozai"
             VALUE "ProductVersion", "0.6.64"
             VALUE "FileVersion", "0.6.64"
         END

@@ -132,7 +132,7 @@ mod tests{
         unsafe extern "system" fn proc(h:HWND,m:u32,w:WPARAM,l:LPARAM)->LRESULT{DefWindowProcW(h,m,w,l)}
         let instance=GetModuleHandleW(None).unwrap().into();let class=w!("TXGuiFoundation");
         RegisterClassW(&WNDCLASSW{lpfnWndProc:Some(proc),hInstance:instance,lpszClassName:class,..Default::default()});
-        let create=||CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("Daozai synthetic QQ"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
+        let create=||CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("YeDaozai synthetic QQ"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
         let paths=[normalized(&std::env::current_exe().unwrap().to_string_lossy())];
         let first=create();let one=accounts(&paths);let original=one.as_ref().unwrap()[0];let before=ready_with_paths(original,&paths);let second=create();let ambiguous=accounts(&paths);let after=ready_with_paths(original,&paths);
         DestroyWindow(first).unwrap();DestroyWindow(second).unwrap();

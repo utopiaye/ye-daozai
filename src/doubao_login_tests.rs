@@ -42,7 +42,7 @@ fn session_collection_limits_domain_path_expiry_and_duplicate_scope() {
 }
 
 fn temp_dir(label: &str) -> PathBuf {
-    let dir = std::env::temp_dir().join(format!("daozai-doubao-{label}-{}-{}", std::process::id(), chrono::Utc::now().timestamp_nanos_opt().unwrap()));
+    let dir = std::env::temp_dir().join(format!("ye-daozai-doubao-{label}-{}-{}", std::process::id(), chrono::Utc::now().timestamp_nanos_opt().unwrap()));
     fs::create_dir_all(&dir).unwrap(); dir
 }
 

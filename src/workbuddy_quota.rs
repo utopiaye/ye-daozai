@@ -218,7 +218,7 @@ impl Connect {
         let config=super::super::Config::load();
         let expected=config.accounts.iter().find(|a|a.enabled&&a.provider==super::super::Provider::WorkBuddy).and_then(|a|a.slot.as_deref());
         let cancel=std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-        let result=if let Ok(state)=std::env::var("DAOZAI_TEST_WORKBUDDY_STATE"){
+        let result=if let Ok(state)=std::env::var("YE_DAOZAI_TEST_WORKBUDDY_STATE"){
             login::wait_for_login(&super::super::http_agent(),&state,expected,cancel)
         }else{login::connect(expected,cancel)};
         let (id,snapshot)=result.expect("官网登录");

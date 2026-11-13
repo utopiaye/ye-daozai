@@ -23,17 +23,17 @@ fn launch_compatible(options:eframe::NativeOptions,launch:&mut impl FnMut(eframe
     }
 }
 
-/// 验收与排障：设置环境变量 `DAOZAI_RENDERER=wgpu` 直接使用兼容图形后端，
+/// 验收与排障：设置环境变量 `YE_DAOZAI_RENDERER=wgpu` 直接使用兼容图形后端，
 /// 在正常电脑上也能检查 OpenGL 失败后用户会看到的画面。
 fn forced_compatible()->bool {
-    std::env::var("DAOZAI_RENDERER").is_ok_and(|value|value.trim().eq_ignore_ascii_case("wgpu"))
+    std::env::var("YE_DAOZAI_RENDERER").is_ok_and(|value|value.trim().eq_ignore_ascii_case("wgpu"))
 }
 
 pub fn run(mut options:eframe::NativeOptions,mut launch:impl FnMut(eframe::NativeOptions)->eframe::Result<()>)->eframe::Result<()> {
     // 上次崩在显卡 OpenGL 驱动里时，崩溃处理留下的标记会在这里转成设置。
-    let _=daozai::renderer::apply_pending_fallback();
-    if forced_compatible() || daozai::renderer::compat_requested() {
-        daozai::renderer::set_compat_active(true);
+    let _=ye_daozai::renderer::apply_pending_fallback();
+    if forced_compatible() || ye_daozai::renderer::compat_requested() {
+        ye_daozai::renderer::set_compat_active(true);
         return launch_compatible(options,&mut launch);
     }
     options.renderer=eframe::Renderer::Glow;
@@ -43,7 +43,7 @@ pub fn run(mut options:eframe::NativeOptions,mut launch:impl FnMut(eframe::Nativ
         Err(error @ (eframe::Error::OpenGL(_)|eframe::Error::Glutin(_)|eframe::Error::NoGlutinConfigs(..)))=>error,
         Err(error)=>return Err(error),
     };
-    daozai::renderer::set_compat_active(true);
+    ye_daozai::renderer::set_compat_active(true);
     launch_compatible(fallback_options,&mut launch).map_err(|fallback|eframe::Error::AppCreation(format!(
         "OpenGL 初始化失败：{error}\n兼容图形后端也无法启动：{fallback}\n请安装电脑厂商提供的显卡驱动后重试。"
     ).into()))

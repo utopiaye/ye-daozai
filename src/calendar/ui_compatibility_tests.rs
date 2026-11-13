@@ -50,7 +50,7 @@ fn calendar_partial_warnings_are_scoped_and_clear_after_a_complete_refresh(){
 #[ignore="按需导出日历部分同步提示的实际样式"]
 fn calendar_partial_sync_preview(){
     let _guard=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let destination=std::path::PathBuf::from(std::env::var_os("DAOZAI_CALENDAR_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&destination).unwrap();
+    let destination=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_CALENDAR_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&destination).unwrap();
     for empty in [false,true]{
         let mut h=H::new();let config=Config{provider:Provider::DingTalk,username:"mock".into(),href:None,server:None};
         h.app.calendar.config=Some(config.clone());let month=h.app.calendar.view.month;

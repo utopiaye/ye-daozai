@@ -1,10 +1,10 @@
-use daozai::model::Settings;
+use ye_daozai::model::Settings;
 
 #[test]
 fn legacy_material_settings_are_retired() {
-    let path = std::env::temp_dir().join(format!("daozai-black-skin-{}", std::process::id()));
+    let path = std::env::temp_dir().join(format!("ye-daozai-black-skin-{}", std::process::id()));
     std::fs::create_dir_all(&path).unwrap();
-    std::env::set_var("DAOZAI_DATA_DIR", &path);
+    std::env::set_var("YE_DAOZAI_DATA_DIR", &path);
     for skin in ["glass", "clear", "black"] {
         std::fs::write(path.join("settings.txt"), format!("material={skin}\npet=0\n")).unwrap();
         let settings = Settings::load();

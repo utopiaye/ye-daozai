@@ -20,7 +20,7 @@ try {
     }
     if ($limits.Count -gt 0 -and $account.accountUuid -and $account.organizationUuid) {
         $record = @{ version = 1; account = $account.accountUuid; organization = $account.organizationUuid; at = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds(); rate_limits = $limits }
-        $path = Join-Path $PSScriptRoot 'daozai-usage.json'
+        $path = Join-Path $PSScriptRoot 'ye-daozai-usage.json'
         $temporary = $path + '.' + [Guid]::NewGuid().ToString('N') + '.tmp'
         try {
             [IO.File]::WriteAllText($temporary, ($record | ConvertTo-Json -Depth 5 -Compress), [Text.UTF8Encoding]::new($false))

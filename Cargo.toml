@@ -1,24 +1,24 @@
 [package]
-name = "daozai"
+name = "ye-daozai"
 version = "0.6.64"
 edition = "2021"
 license = "MIT"
-description = "岛仔：Windows 顶部的桌面伙伴与信息岛"
-repository = "https://github.com/Renly1994/xiaotang-daozai"
-default-run = "daozai"
+description = "椰岛仔：Windows 顶部的桌面伙伴与信息岛"
+repository = "https://example.invalid/ye-daozai"
+default-run = "ye-daozai"
 
 [lib]
-name = "daozai"
+name = "ye_daozai"
 path = "src/lib.rs"
 
 [[bin]]
-name = "daozai"
+name = "ye-daozai"
 path = "src/main.rs"
 
 # 无窗口演示录制器：脚本驱动 + 软件光栅化，输出 RGBA 帧流给 ffmpeg。
 [[bin]]
-name = "daozai-record"
-path = "src/bin/daozai-record/main.rs"
+name = "ye-daozai-record"
+path = "src/bin/ye-daozai-record/main.rs"
 required-features = ["record"]
 
 [features]

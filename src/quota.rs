@@ -352,7 +352,7 @@ impl Service {
             {let Ok(mut next)=pending.lock()else{return false;};next.accounts=Some(accounts);next.running=true;}
             let next=pending.clone();let results=self.results.clone();let run=run.clone();
             let(wake,requests)=mpsc::sync_channel::<()>(1);
-            let spawned=std::thread::Builder::new().name("daozai-quota".into()).spawn(move||{
+            let spawned=std::thread::Builder::new().name("ye-daozai-quota".into()).spawn(move||{
                 while requests.recv().is_ok(){
                     let accounts={
                         let Ok(mut state)=next.lock()else{break;};
@@ -426,7 +426,7 @@ fn fetch(agent:&ureq::Agent,account:&Account)->Result<Snapshot,(String,u64)>{
     if account.provider==Provider::Doubao{return doubao::fetch(agent,account);}
     let auth=account_credentials(account).map_err(|e|(e,0))?;
     let url=match account.provider{Provider::Codex=>"https://chatgpt.com/backend-api/wham/usage",Provider::Kimi=>"https://api.kimi.com/coding/v1/usages",_=>unreachable!()};
-    let mut req=agent.get(url).set("Authorization",&format!("Bearer {}",auth.token)).set("Accept","application/json").set("User-Agent","codex-cli/Daozai");
+    let mut req=agent.get(url).set("Authorization",&format!("Bearer {}",auth.token)).set("Accept","application/json").set("User-Agent","codex-cli/YeDaozai");
     if account.provider==Provider::Codex{if let Some(id)=&auth.account_id{req=req.set("ChatGPT-Account-Id",id);}}
     let response=req.call().map_err(|e|match e{ureq::Error::Status(401|403,_)=>("登录已失效或权限不足，请在对应工具中重新登录".into(),0),ureq::Error::Status(429,r)=>("请求过于频繁，稍后自动重试".into(),r.header("Retry-After").and_then(|s|s.parse().ok()).unwrap_or(180).clamp(30,3600)),ureq::Error::Status(n,_)=>(format!("额度服务暂不可用（{n}）"),60),_=>("无法连接额度服务，请检查网络或代理".into(),30)})?;
     let mut body=String::new();response.into_reader().take(1024*1024).read_to_string(&mut body).map_err(|_|("读取额度响应失败".into(),30))?;
@@ -530,7 +530,7 @@ fn fetch(agent:&ureq::Agent,account:&Account)->Result<Snapshot,(String,u64)>{
     }
     #[test]
     fn native_discovery_keeps_distinct_accounts_and_does_not_change_their_files(){
-        let dir=std::env::temp_dir().join(format!("daozai-discovery-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        let dir=std::env::temp_dir().join(format!("ye-daozai-discovery-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
         fs::create_dir_all(&dir).unwrap();
         let personal=dir.join("personal.json");let work=dir.join("work.json");let duplicate=dir.join("duplicate.json");
         let a=r#"{"access_token":"synthetic-personal"}"#;let b=r#"{"access_token":"synthetic-work"}"#;
@@ -545,7 +545,7 @@ fn fetch(agent:&ureq::Agent,account:&Account)->Result<Snapshot,(String,u64)>{
     }
     #[test]
     fn migrated_credentials_do_not_duplicate_accounts_or_merge_different_workspace_members(){
-        let dir=std::env::temp_dir().join(format!("daozai-identity-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));fs::create_dir_all(&dir).unwrap();
+        let dir=std::env::temp_dir().join(format!("ye-daozai-identity-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));fs::create_dir_all(&dir).unwrap();
         let token=|claims:Value|format!("e30.{}.synthetic",base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(claims.to_string()));
         let old=dir.join("old.json");let new=dir.join("new.json");
         fs::write(&old,json!({"access_token":token(json!({"user_id":"same-user","jti":"old"}))}).to_string()).unwrap();

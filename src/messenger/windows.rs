@@ -364,7 +364,7 @@ fn check_target(target:Target)->Result<windows::core::Owned<windows::Win32::Foun
 
 #[derive(Clone,Copy)]
 pub struct OpenRequest {unread:Unread,target:Option<Target>,allow_tray:bool}
-static OPEN:crate::resources::Lane=crate::resources::Lane::new("daozai-messenger-open",1);
+static OPEN:crate::resources::Lane=crate::resources::Lane::new("ye-daozai-messenger-open",1);
 impl OpenRequest {
     pub fn start(self,ctx:eframe::egui::Context)->Result<mpsc::Receiver<Result<(),OpenError>>,OpenError>{
         let lease=OPEN.acquire().ok_or(OpenError::Busy)?;let (tx,rx)=mpsc::channel();

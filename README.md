@@ -1,202 +1,105 @@
 <div align="center">
 
-<img src="assets/daozai-logo.png" width="112" alt="岛仔" />
+<img src="assets/ye-daozai-logo.png" width="112" alt="椰岛仔" />
 
-# 岛仔 · Daozai
+# 椰岛仔 · ye-daozai
 
 **一座小岛，装下桌面日常。**
 
-Windows 桌面伙伴，把消息、音乐、日程、天气和 AI 额度放到手边。
-
-[![最新版本](https://img.shields.io/github/v/release/Renly1994/xiaotang-daozai?color=7955b8&label=最新版本)](https://github.com/Renly1994/xiaotang-daozai/releases/latest)
-[![Windows](https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4)](#下载安装)
-[![开源许可](https://img.shields.io/badge/License-MIT-3cbf91)](LICENSE)
-[![Rust 与 egui](https://img.shields.io/badge/Rust-egui-8b6ca8)](#从源码构建与参与开发)
-
-**[下载 Windows 版](https://github.com/Renly1994/xiaotang-daozai/releases/latest)** · [使用指南](docs/USAGE.md) · [更新记录](CHANGELOG.md) · [反馈问题](https://github.com/Renly1994/xiaotang-daozai/issues)
+Windows 桌面信息岛 · Rust + egui 构建 · 不依赖 Electron
 
 </div>
 
-岛仔是一款开源的 Windows 桌面小工具。平时收起在屏幕边缘，鼠标靠近就展开；切歌、看日程、复制验证码、记一条待办，都能顺手完成。小岛里的伙伴会眨眼、打盹、喝水，也会跟着音乐唱歌。
+> 本项目是基于开源项目 **岛仔 Daozai**（`Renly1994/xiaotang-daozai`，MIT License）代码改造的本地定制版：品牌、程序名与数据目录改为 **ye-daozai / 椰岛仔**，停用指向上游仓库的在线更新。核心功能与绝大部分代码来自原项目及其贡献者，版权声明见 [LICENSE](LICENSE) 与 [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt)。
 
-你可以选刘海或胶囊，放在顶部、左侧或右侧，只保留自己需要的功能。岛仔使用 Rust 和 egui 构建，不依赖 Electron。
+椰岛仔平时收起在屏幕边缘，鼠标靠近就展开；切歌、看日程、复制验证码、记一条待办，都能顺手完成。小岛里的伙伴会眨眼、打盹、喝水，也会跟着音乐唱歌。可选刘海或胶囊形态，放在顶部、左侧或右侧，只保留自己需要的功能。
 
-## 微信里有新消息，看一眼岛边
+## 能力一览
 
-![微信和 QQ 未读：收起时显示图标，展开后点击切换对应窗口](docs/images/readme/notifications.webp)
-
-- **微信、QQ 未读提醒**：收起时亮起图标和红点，展开后在面板旁查看，点击切换到对应窗口。
-- **微信多开分开看**：不同账号分别显示，点击对应账号的未读图标即可切换。
-- **按需显示通知正文**：默认隐藏正文；开启预览后仍遮罩识别出的验证码。
-- **微信提醒不读取聊天正文**：根据任务栏闪动提示新消息。微信缩在托盘时，可选开启「托盘一键唤起微信」。
-
-开启方式：**设置 → 通知、邮箱与日程 → 通知**。微信开启「微信新消息提醒」；QQ 选择「只连接 QQ」，并在 QQ 中启用 Windows 系统通知。
-
-## 换个皮肤，也换个位置
-
-![五款皮肤：经典黑、奶油、毛玻璃浅色、毛玻璃深色、悬浮云；刘海和胶囊两种形态](docs/images/readme/appearance.webp)
-
-**五款皮肤 × 两种形态，自由搭配。** 经典黑、奶油、毛玻璃·浅、毛玻璃·深和「悬浮云」，都能搭配刘海或胶囊。毛玻璃透出身后的桌面；悬浮云随专辑封面换色，光晕跟着鼠标移动。
-
-![顶部、左侧和右侧停靠，以及侧边收起与展开状态](docs/images/readme/docking.webp)
-
-- **三边停靠**：顶部横向展开，左右侧边收起为竖向胶囊，靠近后从屏幕边缘展开。
-- **大小与位置可调**：岛体大小支持 80%–140%；顶部可左右移动，侧边可上下调整。
-- **多屏与自动避让**：跟随主屏或固定到指定显示器；指定应用覆盖小岛时，可自动收成贴边细线。
-- **按习惯显示**：支持极简模式、12／24 小时制，以及功能页面开关与拖动排序。
-
-在 **设置 → 常规 → 岛体外观／岛体显示** 中调整。岛上单行歌词目前支持顶部停靠。
-
-## 听歌时，歌词就在抬眼处
-
-![音乐播放控制、展开歌词与收起状态下的岛上单行歌词](docs/images/readme/music.webp)
-
-播放、暂停、切歌、调节音量和拖动进度，都能在岛上操作。展开看歌词，也可以收起后只留一行歌词，让桌面继续做自己的事。
-
-- 通过 Windows 媒体会话读取播放信息，并针对网易云音乐、QQ 音乐、酷狗、汽水音乐补充兼容。
-- 网易云优先按歌曲 ID 找词，改善译名、合唱署名和 Live／Remix 等不同版本的匹配。
-
-播放器需提供可用的媒体信息；歌词取决于歌曲元数据与歌词来源，个别歌曲或播放器版本可能无法显示。
-
-## 日程、待办和专注，放在一起
-
-![日历与会议安排、每周重复待办、番茄专注与饮水提醒](docs/images/readme/daily.webp)
-
-| 想做的事 | 岛仔能帮你 |
+| 模块 | 能力 |
 | --- | --- |
-| 看今天的安排 | 月历与当日时间线，合并多个日历和正式邮件邀请，提前提醒会议 |
-| 记住每周的事 | 待办支持单次提醒、每周指定日期重复或每天重复；下一次到来时恢复为待办 |
-| 专心做一件事 | 专注与休息计时，收起时也能查看进度 |
-| 记得喝水 | 自定义每日目标、单次饮水量、提醒间隔与时段，记录错误可撤销 |
+| 音乐 | 通过 Windows 媒体会话（SMTC）读取播放信息，播放/暂停/切歌/音量/进度控制；展开歌词或收起单行歌词；兼容网易云、QQ 音乐、酷狗、汽水音乐 |
+| 消息提醒 | 微信、QQ 未读提示，展开查看并点击切换到对应窗口；支持微信多开账号分开显示 |
+| 邮件 | QQ、163、126、腾讯企业邮、iCloud、Gmail、自定义 IMAP；正文阅读、验证码识别与一键复制、已读/删除操作 |
+| 日历 | 飞书、钉钉、企业微信、iCloud、自定义 CalDAV、Exchange ActiveSync、`.ics` 导入；月历与当日时间线、会议提醒、重复日程 |
+| 日常 | 每周/每日重复待办、番茄专注、饮水记录与提醒 |
+| 小工具 | 文件置物架（拖入文件临时收集）、文字剪贴板历史（30 条，可固定） |
+| AI 额度 | Codex、Claude、Kimi、Grok Bot、Gemini、ZCode、WorkBuddy、DeepSeek、Kiro、豆包；多账号命名与配色 |
+| 天气 | Open-Meteo 实况与四天预报，支持自动定位或手动城市，本地缓存 |
+| 系统提示 | 电量与电源、网络变化、音量、大写锁定、输入语言、蓝牙设备状态 |
+| 外观 | 五款皮肤（经典黑、奶油、毛玻璃浅/深、悬浮云）× 刘海/胶囊两种形态；三边停靠、多屏与自动避让、80%–140% 缩放 |
+| 隐私 | 设置与记录保存在本机；邮箱/日历密码与 API Key 存入 Windows 凭据管理器；独立会话用 DPAPI 加密 |
 
-日历可接入 **飞书、钉钉、企业微信、iCloud、自定义 CalDAV 和兼容的 Exchange ActiveSync**，也能导入 `.ics` 文件。相同日程合并去重；支持全天、跨天和重复日程。
+更多操作说明见 [使用指南](docs/USAGE.md)，隐私细节见 [隐私与安全](docs/PRIVACY.md)。
 
-本机新建或导入的日程保存在本机；远程日历为只读同步。程序退出、电脑关机或睡眠期间无法持续提醒。
+## 系统要求
 
-## 文件先放岛上，刚复制的字也能找回
+Windows 10 / 11 x64。默认使用 OpenGL，初始化失败时自动尝试 Direct3D 12。
 
-![文件置物架与剪贴板历史：拖入文件、重新复制文字、固定常用内容](docs/images/readme/shelf.webp)
+## 从源码构建
 
-**文件置物架**：拖入文件临时收集，点击打开、定位原文件，或拖出到其他应用。移除记录不会删除原文件。
-
-**文字剪贴板**：找回最近复制的 30 条文字，点一下重新复制，常用内容可以固定。历史保存在本机，重启后仍可查看；可在 **设置 → 待办与置物 → 剪贴板** 中关闭。密码管理器标记为敏感的内容不记录。
-
-## 验证码少切一次窗口，邮件也能直接读
-
-![验证码大卡点击复制与邮件正文阅读](docs/images/readme/mail.webp)
-
-连接多个邮箱，在岛上查看来信、识别验证码并点击复制。邮件支持正文阅读与独立全文窗口，网页链接交给默认浏览器打开；正式日历邀请可进入日程。支持已读／未读切换、全部已读、移到回收站及恢复；默认仅在本机整理，可在邮件设置中开启「同步邮件操作到邮箱」。
-
-支持 **QQ、163、126、腾讯企业邮、iCloud、Gmail 和自定义 IMAP**。验证码可设置在 30／60／300 秒后自动隐藏，覆盖列表、正文与通知；主动查看后会再次隐藏。
-
-## AI 还剩多少额度，抬眼就知道
-
-![AI 额度面板：Codex 额度、WorkBuddy 积分与 DeepSeek 余额](docs/images/readme/ai-quota.webp)
-
-支持 **Codex、Claude、Kimi、Grok Bot、Gemini、ZCode、WorkBuddy、DeepSeek 和 Kiro**。
-
-订阅额度、重置时间、套餐积分与 API 余额，按服务展示。多个账号可分别命名、选择配色，常用账号直接放在收起的小岛上。
-
-- **ZCode**：查看套餐额度。
-- **Claude**：只读取桌面版本地用量历史与缓存，或接收 Claude Code 官方状态栏输出；岛仔不使用 Claude 登录令牌，也不请求 Claude 额度接口。数据随官方客户端使用更新，桌面版缓存有效时自动显示重置时间，读取不到时显示未知。
-- **Kiro**：只读识别 Kiro 登录缓存并核验用户，显示套餐、有效试用与赠送 / 加购点数及明细，超额上限单独显示；支持美国东部和欧洲中部区域。不自动续期，登录过期时请在 Kiro 中重新登录。
-- **WorkBuddy**：查看剩余积分；优先识别本机客户端登录，也可在默认浏览器完成授权。
-- **Gemini**：支持 Chrome 144+ 原生授权连接，读取官网的 5 小时与每周额度，无需扩展。先在 Chrome 登录 Gemini，首次在 `chrome://inspect/#remote-debugging` 开启连接，回岛仔点击连接并在 Chrome 允许授权；会话加密保存在本机，后续独立刷新。高级设置保留手动 Cookie 连接。
-- **DeepSeek**：使用 API Key 连接，查看账户余额、充值与赠送金额。
-
-连接方式、可用字段与账号订阅有关；请求失败或登录过期时，以对应服务的官方页面为准。
-
-## 出门前先看一眼天气
-
-天气页显示当前实况与未来四天预报：温度、天气现象、体感、湿度、风速、日出日落时间，以及每天的最高／最低温和降水概率。
-
-- 默认按当前网络出口自动定位，**设置 → 天气** 里也可以填城市名（中英文都行），或点「自动定位」清除。城市输入按回车或点「刷新天气」后生效。
-- 数据来自 **Open-Meteo**（免费、无需密钥），每 15 分钟自动更新，也可以在页面右上角手动刷新。同一城市请求间隔至少 30 秒，失败后至少 2 分钟；关闭天气模块后停止后续自动查询。
-- 结果缓存在本机：断网时继续显示上次的数据，并用橙色标出更新时间。
-- 岛收起时常驻栏会在时间后面带一个天气图标和当前温度（如 `🌧 9°`），点它直接进天气页；不想看就在页面管理里关闭天气模块，或进极简模式。
-
-## 还有这些顺手的小功能
-
-电源与电量、网络变化、音量、大写锁定、输入语言、蓝牙设备状态，都能在小岛上提示。通知、蓝牙监听与不常用的功能页可以按需关闭。
-
-## 下载安装
-
-前往 **[最新正式版](https://github.com/Renly1994/xiaotang-daozai/releases/latest)**，按使用习惯选择：
-
-| 下载文件 | 使用方式 |
-| --- | --- |
-| `Daozai-Setup-v版本号-x64.exe` | **推荐**。双击安装，可选择安装位置、桌面快捷方式和开机自启 |
-| `Daozai-v版本号-windows-x64.zip` | 免安装。完整解压后运行 `daozai.exe`，用户数据仍保存在应用数据目录 |
-| `SHA256SUMS.txt` | 下载校验，可用 PowerShell `Get-FileHash -Algorithm SHA256` 比对 |
-
-首次安装默认创建桌面快捷方式、不开机自启。安装后从小岛或托盘打开设置，选择需要的功能和连接。
-
-**更新**：设置 → 关于 → 检查更新。支持应用内下载、校验后重启更新，也可从发布页下载覆盖安装；升级保留原设置和数据，卸载同样保留用户数据。下载窗口提供夸克网盘备用入口。
-
-**系统**：Windows 10／11 x64。默认使用 OpenGL，初始化失败时自动尝试 Direct3D 12。Windows 11 已进行本机实测，Windows 10、不同显卡及多屏组合仍需更多反馈。暂不提供 macOS、Linux 或 ARM64 成品包。
-
-当前程序未做商业代码签名，Windows 可能提示未知发布者；请核对仓库来源与文件校验值。更多操作见 [使用指南](docs/USAGE.md)。
-
-<details>
-<summary><b>连接服务之前，需要准备什么？</b></summary>
-
-| 类型 | 支持入口 | 需要准备 |
-| --- | --- | --- |
-| 邮箱 | QQ、163、126、腾讯企业邮、iCloud、Gmail、自定义 IMAP | 启用 IMAP，填写授权码或 App 专用密码；自定义服务可填写服务器、端口与登录用户名 |
-| 日历 | 飞书、钉钉、企业微信、iCloud、CalDAV、Exchange ActiveSync | 服务商提供的日历同步凭据与必要的服务器地址；安装桌面客户端不等于授权 |
-| AI 额度 | Codex、Claude、Kimi、Grok Bot、Gemini、ZCode、WorkBuddy、DeepSeek、Kiro | 对应客户端登录、独立授权或 API Key；具体以设置中的连接入口为准 |
-
-QQ 收信、邮件日程和飞书个人日历已进行真实账号测试。其他日历入口的可用性与服务端配置、权限和兼容性有关；钉钉、企业微信尚未完成本轮真实账号同步验收。
-
-</details>
-
-<details>
-<summary><b>数据与隐私</b></summary>
-
-- 设置、待办、本机日程、饮水记录、剪贴板历史、置物路径与连接元数据保存在 `%APPDATA%\Daozai`。
-- 邮箱和日历密码、DeepSeek API Key 保存在 Windows 凭据管理器；独立 Gemini、WorkBuddy 会话使用 Windows DPAPI 加密。
-- 微信新消息提醒根据任务栏闪动工作，不读取联系人或聊天正文；QQ 与应用通知需要相应的系统通知权限。
-- 读取已有 AI 客户端登录时不回写原客户端配置。不要把授权码、Cookie、API Key 或登录 JSON 上传到 Issue。
-- 邮箱读取收件箱，不读取垃圾邮件文件夹；邮件正文在当前进程中用于展示和识别。
-- 岛仔没有自建的邮件或日程上传后台；开启联网功能后，会访问对应服务商与歌词服务。
-- 天气只用城市名或由定位服务给出的经纬度查询 Open-Meteo；自动定位通过 `ipwho.is` 获取大致城市，不读取账号信息。最近一次天气结果缓存在 `%APPDATA%\Daozai\weather.json`。
-
-完整说明见 [隐私与安全](docs/PRIVACY.md)。
-
-</details>
-
-<details>
-<summary id="从源码构建与参与开发"><b>从源码构建与参与开发</b></summary>
-
-需要 Rust stable、MSVC C++ 构建工具和 Windows SDK。
+需要 Rust stable、MSVC C++ 构建工具和 Windows SDK：
 
 ```powershell
 rustup default stable-x86_64-pc-windows-msvc
-cargo build --locked --release --bin daozai
-.\target\release\daozai.exe
+cargo build --locked --release --bin ye-daozai
+.\target\release\ye-daozai.exe
 ```
 
-运行测试及打包：
+运行测试与打包：
 
 ```powershell
 cargo test --locked --all-targets --features record -- --test-threads=1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\package.ps1
 ```
 
-测试按单线程运行，以隔离使用进程环境变量的数据目录测试。低内存设备可设置 `$env:CARGO_BUILD_JOBS = "1"`。打包需要 NSIS 3，可通过 `-NsisCompiler` 指定 `makensis.exe`。
+测试按单线程运行以隔离使用进程环境变量的数据目录测试。低内存设备可设置 `$env:CARGO_BUILD_JOBS = "1"`。
 
-项目结构、界面预览与贡献方式见 [开发指南](CONTRIBUTING.md)。
+## 本机部署
 
-</details>
+推荐使用安装脚本（安装到 `%LOCALAPPDATA%\Programs\YeDaozai`，创建快捷方式并登记卸载信息）：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\installer\install.ps1
+```
+
+也可以直接双击仓库根目录的 `安装椰岛仔.cmd`，或直接运行构建产物作为便携版。
+
+- 用户数据：`%APPDATA%\YeDaozai`；可用环境变量 `YE_DAOZAI_DATA_DIR` 指定独立目录。
+- 升级：本地定制版已停用在线更新。获取新构建后重新运行安装脚本覆盖安装即可，设置与数据会保留。
+- 卸载：使用 Windows「已安装的应用」中的卸载项，或 `installer\uninstall.ps1`；卸载保留用户数据。
+
+## 项目结构
+
+```
+src/
+├── main.rs               Windows 外壳：窗口、托盘、系统事件与后台服务衔接
+├── app.rs / pages.rs     应用状态与主界面
+├── native.rs / system.rs 原生窗口、输入、拖放与系统事件
+├── composition.rs        毛玻璃底板与窗口合成
+├── renderer.rs / graphics.rs / paint.rs   渲染与绘制
+├── smtc.rs / lyrics.rs / *_playback.rs    媒体会话、歌词与播放器兼容
+├── mail*.rs              IMAP、MIME、验证码与邮件 UI
+├── calendar*.rs          CalDAV/EAS/ICS 与日历 UI
+├── quota.rs / *_quota.rs AI 额度与各服务适配
+├── messenger* / wechat.rs                 微信、QQ 未读监测
+├── weather*.rs / clipboard.rs / icons.rs  天气、剪贴板与文件图标
+├── bin/ye-daozai-record/ 无窗口演示录制器（软件光栅化）
+└── ui_tests.rs           无窗口交互与布局回归测试
+vendor/                   少量上游补丁（eframe/egui/imap/imap-proto/ureq）
+installer/ scripts/       安装、卸载、打包与诊断脚本
+```
+
+技术要点：
+
+- **Rust 2021 + eframe/egui 0.31**：即时模式 UI，自绘岛体、宠物与动画；`vendor/` 中维护少量上游补丁。
+- **Windows 原生集成**（`windows` crate 0.58）：无边框透明置顶窗口、DWM 毛玻璃合成、系统托盘、单实例、全局输入、任务栏闪动与未读、蓝牙、电源、注册表开机自启。
+- **WinRT 通知与媒体**：通过系统媒体传输控制（SMTC）与通知中心获取播放和消息信息。
+- **后台服务线程**：邮件、日历、额度、微信/QQ 监听、图标缩略图等均以独立线程运行，UI 只消费事件快照。
+- **无头测试**：大量 UI/布局回归测试在无窗口环境下直接驱动 `egui`；`record` 特性提供合成数据录制器。
 
 ## 开源与致谢
 
-岛仔原创代码采用 [MIT License](LICENSE)。Rust 依赖、vendored 代码、第三方图标及品牌标识沿用各自的许可或权利声明；MIT 不授予服务商标使用权，也不代表官方合作或认证。详见 [第三方声明](THIRD_PARTY_NOTICES.txt) 和 [依赖说明](docs/DEPENDENCIES.md)。
+本项目代码沿用 MIT License。原项目「岛仔 Daozai」版权归其作者及贡献者所有；Rust 依赖、vendored 代码、第三方图标与素材沿用各自的许可或权利声明。详见 [第三方声明](THIRD_PARTY_NOTICES.txt) 和 [依赖说明](docs/DEPENDENCIES.md)。
 
-「悬浮云」皮肤作者：啵（[@hanhb123](https://github.com/hanhb123)）。感谢 egui／eframe、Rust 社区，以及提供参考与素材的开源项目。
-
-## 感谢支持
-
-![感谢支持岛仔的朋友们](docs/images/readme/supporters.webp)
-
-喜欢岛仔的话，欢迎点一个 **Star**，也可以在 **设置 → 关于 → 支持作者** 请岛仔喝杯咖啡。
+本定制版重新生成了 ye-daozai / 椰岛仔的品牌图标，未使用原项目的商标与 Logo 素材。

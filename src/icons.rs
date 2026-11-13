@@ -22,7 +22,7 @@ pub(crate) struct Cache {
 impl Cache {
     fn start(&mut self,ctx:egui::Context,load:impl Fn(&Path)->Loaded+Send+'static){
         let(tx,requests)=mpsc::sync_channel::<PathBuf>(8);let(results,rx)=mpsc::sync_channel(8);
-        std::thread::Builder::new().name("daozai-thumbnails".into()).spawn(move||{
+        std::thread::Builder::new().name("ye-daozai-thumbnails".into()).spawn(move||{
             #[cfg(windows)] let initialized=unsafe{windows::Win32::System::Com::CoInitializeEx(None,windows::Win32::System::Com::COINIT_APARTMENTTHREADED).is_ok()};
             while let Ok(path)=requests.recv(){
                 let preview=load(&path);
@@ -232,7 +232,7 @@ mod tests {
         use windows::Win32::System::Com::{CoInitializeEx,CoUninitialize,COINIT_APARTMENTTHREADED};
         use windows::Win32::UI::Shell::{SIIGBF_ICONONLY,SIIGBF_RESIZETOFIT,SIIGBF_BIGGERSIZEOK};
         let initialized=unsafe{CoInitializeEx(None,COINIT_APARTMENTTHREADED).is_ok()};
-        let dir=std::env::temp_dir().join(format!("daozai-folder-icons-{}-{}",std::process::id(),std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        let dir=std::env::temp_dir().join(format!("ye-daozai-folder-icons-{}-{}",std::process::id(),std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
         std::fs::create_dir(&dir).unwrap();
         let picture=dir.join("preview.png");
         image::RgbaImage::from_pixel(80,40,image::Rgba([230,70,40,255])).save(&picture).unwrap();

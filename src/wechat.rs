@@ -88,7 +88,7 @@ impl TrayLog {
         let key=w!("SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion");
         let build=registry_string(HKEY_LOCAL_MACHINE,key,w!("CurrentBuild")).unwrap_or_default();
         let display=registry_string(HKEY_LOCAL_MACHINE,key,w!("DisplayVersion")).unwrap_or_default();
-        Self(vec![format!("岛仔 {} · Windows 内部版本 {build} ({display}) · 账号进程 {} · 闪动窗口 {:#x}",env!("CARGO_PKG_VERSION"),unread.pid,unread.window)])
+        Self(vec![format!("椰岛仔 {} · Windows 内部版本 {build} ({display}) · 账号进程 {} · 闪动窗口 {:#x}",env!("CARGO_PKG_VERSION"),unread.pid,unread.window)])
     }
     fn step(&mut self,line:impl Into<String>){self.0.push(line.into());}
     /// 写入日志并返回给用户看的提示（带错误码，便于反馈）。
@@ -524,7 +524,7 @@ pub fn trace(line:impl Into<String>){
     if std::fs::create_dir_all(&directory).is_ok(){let _=std::fs::write(directory.join("wechat-events.log"),log.iter().cloned().collect::<Vec<_>>().join("\n")+"\n");}
 }
 
-/// 岛仔自己是否以管理员身份运行（写进诊断记录）。
+/// 椰岛仔自己是否以管理员身份运行（写进诊断记录）。
 fn process_elevated()->bool{
     use windows::Win32::{Security::{GetTokenInformation,TokenElevation,TOKEN_ELEVATION,TOKEN_QUERY},System::Threading::{GetCurrentProcess,OpenProcessToken}};
     unsafe{
@@ -544,8 +544,8 @@ impl Listener {
         // 每次启动监听都记一条：日志里没有这一行，就说明监听从未启动。
         let elevated=if process_elevated(){"是"}else{"否"};
         match &result {
-            Ok(listener)=>trace(format!("监听已启动 · 岛仔管理员权限={elevated} · 微信安装路径：{}",listener.state.borrow().paths.iter().filter(|p|!p.starts_with('*')).cloned().collect::<Vec<_>>().join("，"))),
-            Err(error)=>trace(format!("监听启动失败：{error} · 岛仔管理员权限={elevated}")),
+            Ok(listener)=>trace(format!("监听已启动 · 椰岛仔管理员权限={elevated} · 微信安装路径：{}",listener.state.borrow().paths.iter().filter(|p|!p.starts_with('*')).cloned().collect::<Vec<_>>().join("，"))),
+            Err(error)=>trace(format!("监听启动失败：{error} · 椰岛仔管理员权限={elevated}")),
         }
         result
     }
@@ -557,8 +557,8 @@ impl Listener {
             let message=RegisterWindowMessageW(w!("SHELLHOOK"));
             if message==0{return Err(format!("无法注册{}提醒事件",source.name()));}
             let taskbar_created=RegisterWindowMessageW(w!("TaskbarCreated"));
-            let hwnd=CreateWindowExW(WS_EX_TOOLWINDOW,w!("STATIC"),w!("DaozaiWechatListener"),WS_POPUP,0,0,0,0,None,None,None,None).map_err(|_|format!("无法创建{}监听窗口",source.name()))?;
-            // 岛仔以管理员身份运行时，系统会拦下资源管理器发来的窗口事件；显式允许这两条消息。
+            let hwnd=CreateWindowExW(WS_EX_TOOLWINDOW,w!("STATIC"),w!("YeDaozaiWechatListener"),WS_POPUP,0,0,0,0,None,None,None,None).map_err(|_|format!("无法创建{}监听窗口",source.name()))?;
+            // 椰岛仔以管理员身份运行时，系统会拦下资源管理器发来的窗口事件；显式允许这两条消息。
             for allowed in [message,taskbar_created] {
                 let _=ChangeWindowMessageFilterEx(hwnd,allowed,MSGFLT_ALLOW,None);
             }
@@ -595,7 +595,7 @@ mod tests {
         let instance=GetModuleHandleW(None).unwrap().into();let pid=std::process::id();
         for (source,class) in [(Messenger::Wechat,w!("WeChatMainWndForPC")),(Messenger::WeCom,w!("WeWorkWindow")),(Messenger::Feishu,w!("Chrome_WidgetWin_1")),(Messenger::DingTalk,w!("Qt51511QWindowIcon")),(Messenger::DingTalk,w!("StandardFrame_DingTalk"))]{
             RegisterClassW(&WNDCLASSW{lpfnWndProc:Some(proc),hInstance:instance,lpszClassName:class,..Default::default()});
-            let window=CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("Daozai synthetic client"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
+            let window=CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("YeDaozai synthetic client"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
             let hwnd=CreateWindowExW(WS_EX_TOOLWINDOW,w!("STATIC"),w!(""),WS_POPUP,0,0,0,0,None,None,None,None).unwrap();
             let message=RegisterWindowMessageW(w!("SHELLHOOK"));
             let state=Box::new(RefCell::new(State{message,taskbar_created:RegisterWindowMessageW(w!("TaskbarCreated")),source,registered:true,paths:vec![normalized(&std::env::current_exe().unwrap().to_string_lossy())],burst:Vec::new(),pending:Vec::new(),ctx:Default::default()}));
@@ -618,7 +618,7 @@ mod tests {
         let instance=GetModuleHandleW(None).unwrap().into();let pid=std::process::id();
         for (source,class) in [(Messenger::WeCom,w!("WeWorkWindow")),(Messenger::Feishu,w!("Chrome_WidgetWin_1")),(Messenger::DingTalk,w!("Qt51511QWindowIcon"))]{
             RegisterClassW(&WNDCLASSW{lpfnWndProc:Some(proc),hInstance:instance,lpszClassName:class,..Default::default()});
-            let create=||CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("Daozai synthetic client"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
+            let create=||CreateWindowExW(WINDOW_EX_STYLE(0),class,w!("YeDaozai synthetic client"),WS_OVERLAPPEDWINDOW,-10000,-10000,400,500,None,None,instance,None).unwrap();
             let (first,second)=(create(),create());
             let hwnd=CreateWindowExW(WS_EX_TOOLWINDOW,w!("STATIC"),w!(""),WS_POPUP,0,0,0,0,None,None,None,None).unwrap();
             let message=RegisterWindowMessageW(w!("SHELLHOOK"));
@@ -776,10 +776,10 @@ mod tests {
                 }
                 unsafe extern "system" fn child_proc(h:HWND,m:u32,w:WPARAM,l:LPARAM)->LRESULT{DefWindowProcW(h,m,w,l)}
                 let instance=GetModuleHandleW(None).unwrap().into();
-                RegisterClassW(&WNDCLASSW{lpfnWndProc:Some(proc),hInstance:instance,lpszClassName:w!("DaozaiTrayFixture"),..Default::default()});
+                RegisterClassW(&WNDCLASSW{lpfnWndProc:Some(proc),hInstance:instance,lpszClassName:w!("YeDaozaiTrayFixture"),..Default::default()});
                 RegisterClassW(&WNDCLASSW{lpfnWndProc:Some(child_proc),hInstance:instance,lpszClassName:w!("TrayNotifyWnd"),..Default::default()});
                 // 透明窗口只提供系统无障碍控件，不显示界面，也不抢占前台。
-                let window=CreateWindowExW(WS_EX_LAYERED|WS_EX_NOACTIVATE|WS_EX_TOOLWINDOW,w!("DaozaiTrayFixture"),w!(""),WS_POPUP,10,10,240,220,None,None,instance,None).unwrap();
+                let window=CreateWindowExW(WS_EX_LAYERED|WS_EX_NOACTIVATE|WS_EX_TOOLWINDOW,w!("YeDaozaiTrayFixture"),w!(""),WS_POPUP,10,10,240,220,None,None,instance,None).unwrap();
                 SetLayeredWindowAttributes(window,COLORREF(0),0,LWA_ALPHA).unwrap();
                 SetWindowLongPtrW(window,GWLP_USERDATA,Arc::as_ptr(&received) as isize);
                 let parent=if legacy{CreateWindowExW(WINDOW_EX_STYLE(0),w!("TrayNotifyWnd"),w!(""),WS_CHILD|WS_VISIBLE,0,0,240,220,window,None,instance,None).unwrap()}else{window};
@@ -966,7 +966,7 @@ mod tests {
     #[test]
     #[ignore="需要已启动并位于后台的微信窗口；仅向测试窗口发送模拟事件"]
     fn local_wechat_background_window(){unsafe{
-        let target:isize=std::env::var("DAOZAI_TEST_WECHAT_HWND").unwrap().parse().unwrap();
+        let target:isize=std::env::var("YE_DAOZAI_TEST_WECHAT_HWND").unwrap().parse().unwrap();
         let listener=Listener::new(Default::default()).unwrap();
         let hwnd=listener.hwnd;
         let message=RegisterWindowMessageW(w!("SHELLHOOK"));

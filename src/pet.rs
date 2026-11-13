@@ -1,4 +1,4 @@
-//! 岛仔的原生状态、矢量表情与表情图集播放。
+//! 椰岛仔的原生状态、矢量表情与表情图集播放。
 use crate::anim::{approach, lerp, smoothstep};
 use crate::paint::{Card, H};
 use crate::theme::{self, W};
@@ -102,9 +102,9 @@ mod tests {
     fn listening_expression_gallery(){
         use eframe::egui::{self,Pos2,Rect,Vec2};
         use crate::app::{App,Env,Options,WIN_W,WIN_H};
-        let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_LISTENING_PREVIEW").expect("需指定预览目录"));
+        let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_LISTENING_PREVIEW").expect("需指定预览目录"));
         std::fs::create_dir_all(&dest).unwrap();
-        std::env::set_var("DAOZAI_DATA_DIR",std::env::temp_dir().join(format!("daozai-listening-{}",std::process::id())));
+        std::env::set_var("YE_DAOZAI_DATA_DIR",std::env::temp_dir().join(format!("ye-daozai-listening-{}",std::process::id())));
         let ctx=egui::Context::default();let mut app=App::new(&ctx,Options{fetch_lyrics:false,pet_idle:1e9});
         app.settings.pet=true;app.settings.minimal=false;app.settings.island_lyrics=false;
         let mut scenes=Vec::new();let mut start=0.0;

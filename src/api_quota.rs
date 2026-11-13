@@ -22,7 +22,7 @@ fn request(agent:&ureq::Agent,provider:Provider,source:&str,key:&str,cancel:Opti
     }
 }
 #[cfg(windows)]
-fn credential(slot:&str)->Result<keyring::Entry,String>{keyring::Entry::new("Daozai.ApiQuota",slot).map_err(|_|"无法打开 Windows 凭据管理器".into())}
+fn credential(slot:&str)->Result<keyring::Entry,String>{keyring::Entry::new("YeDaozai.ApiQuota",slot).map_err(|_|"无法打开 Windows 凭据管理器".into())}
 #[cfg(windows)]
 fn save(slot:&str,key:&str)->Result<(),String>{credential(slot)?.set_password(key).map_err(|_|"无法安全保存 API Key，未添加账号".into())}
 #[cfg(not(windows))]

@@ -325,7 +325,7 @@ mod tests{
         let connected=Connected{source:"new.json".into(),label:String::new(),snapshot};assert_eq!(apply_connection(&mut config,Some(&pending),&connected).unwrap(),pending.id);assert_eq!(config.accounts.len(),1);
     }
     #[test]fn login_changes_during_a_query_discard_the_result_without_rewriting_tokens(){
-        let path=std::env::temp_dir().join(format!("daozai-kiro-read-only-{}.json",std::process::id()));let original=json!({"accessToken":"first"}).to_string();std::fs::write(&path,&original).unwrap();
+        let path=std::env::temp_dir().join(format!("ye-daozai-kiro-read-only-{}.json",std::process::id()));let original=json!({"accessToken":"first"}).to_string();std::fs::write(&path,&original).unwrap();
         let s=query_with(&path,|_|Ok(parse(&payload()).unwrap())).unwrap();assert!(s.kiro.is_some());assert_eq!(std::fs::read_to_string(&path).unwrap(),original);
         let result=query_with(&path,|_|{std::fs::write(&path,json!({"accessToken":"second"}).to_string()).unwrap();Ok(parse(&payload()).unwrap())});assert!(result.unwrap_err().0.contains("已变化"));std::fs::remove_file(path).unwrap();
     }

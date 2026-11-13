@@ -26,7 +26,7 @@ fn gemini_connect_form_opens_default_browser_without_claiming_connection(){
         assert!(texts.contains(&"打开默认浏览器登录"),"Gemini 应在系统默认浏览器中登录");
         assert!(texts.contains(&"连接已登录的 Chrome"),"Gemini 应支持本人授权连接现有 Chrome 会话");
         assert!(texts.iter().any(|s|s.contains("chrome://inspect/#remote-debugging")),"首次连接应提供 Chrome 原生设置入口");
-        assert!(!texts.iter().any(|s|s.contains("自动连接")),"打开官网不能表示岛仔已获得登录会话");
+        assert!(!texts.iter().any(|s|s.contains("自动连接")),"打开官网不能表示椰岛仔已获得登录会话");
         assert!(!texts.iter().any(|s|s.contains("Kimi 浏览器扩展")),"Gemini 连接不应要求额外安装扩展");
         assert!(texts.contains(&"Google 邮箱"));
         let original=h.app.quota.config.clone();
@@ -36,7 +36,7 @@ fn gemini_connect_form_opens_default_browser_without_claiming_connection(){
         }
         assert!(h.app.pending.contains(&crate::app::Cmd::OpenUrl("https://gemini.google.com/usage".into())));
         assert!(h.app.quota.gemini_connecting.is_none());assert_eq!(h.app.quota.config,original);
-        if let Some(dest)=std::env::var_os("DAOZAI_GEMINI_PREVIEW_DIR"){
+        if let Some(dest)=std::env::var_os("YE_DAOZAI_GEMINI_PREVIEW_DIR"){
             let dest=std::path::PathBuf::from(dest);std::fs::create_dir_all(&dest).unwrap();
             raster.buf.fill([0.08,0.09,0.12,1.0]);raster.draw(&h.ctx.tessellate(h.shapes.clone(),1.0),1.0);let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);
             image::save_buffer(dest.join(if dark{"dark.png"}else{"light.png"}),&rgba,640,760,image::ColorType::Rgba8).unwrap();
@@ -188,7 +188,7 @@ fn weather_solar_view_preserves_readable_times_across_skins_and_scales(){
 fn weather_foundation_preview(){
     use crate::model::{Dock,Skin};
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for (name,dock,solar,clock,skin) in [
         ("weather-week",Dock::Top,false,"14:08:00",Skin::ALL[0]),
         ("weather-sun",Dock::Top,true,"14:08:00",Skin::ALL[0]),
@@ -251,7 +251,7 @@ fn weather_foundation_preview(){
 #[ignore="按需导出进入日照视图时的涟漪与太阳滑入过程"]
 fn weather_solar_entry_preview(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let mut h=H::new();h.app.settings.pet=false;
     h.app.weather.snapshot=Some(crate::weather::parse("杭州",&serde_json::json!({"timezone":"Asia/Shanghai",
         "current":{"temperature_2m":19,"apparent_temperature":18,"relative_humidity_2m":58,"wind_speed_10m":12,"weather_code":2,"is_day":1},
@@ -540,7 +540,7 @@ fn enlarged_island_preserves_font_resolution_with_a_separate_settings_window(){
                 }}
             }
             raster.update_textures(&child.textures_delta);raster.update_textures(&root.textures_delta);
-            if frame==2 {if let Some(dest)=std::env::var_os("DAOZAI_FOCUS_SCALE_PREVIEW") {
+            if frame==2 {if let Some(dest)=std::env::var_os("YE_DAOZAI_FOCUS_SCALE_PREVIEW") {
                 let dest=std::path::PathBuf::from(dest);std::fs::create_dir_all(&dest).unwrap();
                 raster.buf.fill([0.18,0.20,0.24,1.0]);raster.draw(&h.ctx.tessellate(root.shapes,root.pixels_per_point),root.pixels_per_point);
                 let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);
@@ -1000,8 +1000,8 @@ struct H {
 
 impl H {
     fn new() -> Self {
-        let dir = std::env::temp_dir().join(format!("daozai-test-{}-{}", std::process::id(), rand_id()));
-        std::env::set_var("DAOZAI_DATA_DIR", &dir);
+        let dir = std::env::temp_dir().join(format!("ye-daozai-test-{}-{}", std::process::id(), rand_id()));
+        std::env::set_var("YE_DAOZAI_DATA_DIR", &dir);
         let ctx = egui::Context::default();
         let app = App::new(&ctx, Options { fetch_lyrics: false, pet_idle: 1e9 });
         Self { ctx, app, t: 0.0, cursor: None,cmds:vec![],region:Rect::NOTHING,hit:Rect::NOTHING,animating:false,shapes:Vec::new(), bt:Vec::new(),media:Default::default(),power:(None,false),network:None,system_idle:None,screen_locked:false,browser_at_top:None,file_drop_zone:None,hovered_files:vec![],dropped_files:vec![] }
@@ -1397,7 +1397,7 @@ fn settings_opening_restores_focus_once_without_becoming_topmost() {
             raw.viewports.insert(id,egui::ViewportInfo{focused:Some(focused),minimized:Some(!focused),..Default::default()});
             let _=ctx.run(raw,|ctx|(viewport.viewport_ui_cb)(ctx));
         });
-        let id=egui::ViewportId::from_hash_of("daozai-settings");
+        let id=egui::ViewportId::from_hash_of("ye-daozai-settings");
         let mut raw=egui::RawInput::default();
         raw.viewports.insert(id,egui::ViewportInfo{focused:Some(focused),..Default::default()});
         let mut output=h.ctx.run(raw,|ctx|h.app.settings_ui(ctx,false));
@@ -1623,10 +1623,10 @@ fn music_volume_popup_closes_on_escape_outside_click_source_change_and_collapse(
 }
 
 #[test]
-#[ignore="按需导出音乐音量浮条实际画面：DAOZAI_MUSIC_VOLUME_PREVIEW=目录"]
+#[ignore="按需导出音乐音量浮条实际画面：YE_DAOZAI_MUSIC_VOLUME_PREVIEW=目录"]
 fn music_volume_popup_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_MUSIC_VOLUME_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_MUSIC_VOLUME_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for (name,muted,lyrics) in [("volume",false,false),("muted",true,false),("lyrics",false,true)] {
         let mut h=H::new();h.ctx.set_pixels_per_point(2.0);h.app.settings.pet=false;h.app.show_lyrics=lyrics;
         h.media=crate::smtc::NowPlaying{source:"cloudmusic.exe".into(),title:"晴天".into(),artist:"周杰伦".into(),position:92.0,duration:269.0,volume:Some((62,muted)),..Default::default()};
@@ -2071,7 +2071,7 @@ fn island_lyrics_title_fallback_follows_track_changes_and_normal_mode(){
 #[ignore="按需导出岛上歌词的实际渲染画面"]
 fn island_lyrics_layout_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_LYRIC_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_LYRIC_PREVIEW_DIR").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
     let mut cover=egui::ColorImage::new([64,64],egui::Color32::BLACK);
     for y in 0..64 {for x in 0..64 {
@@ -2187,7 +2187,7 @@ fn browser_minimal_preserves_preferences_and_restores_the_previous_mode(){
     let saved=crate::model::Settings::load();
     assert!(saved.browser_minimal && saved.pet && !saved.minimal,"应只持久化开关，保留原模式");
     h.browser_at_top=None;for _ in 0..30 {h.frame(vec![]);}
-    assert!(h.hit.height()<10.0,"打开岛仔设置或托盘时应保留浏览器避让状态");
+    assert!(h.hit.height()<10.0,"打开椰岛仔设置或托盘时应保留浏览器避让状态");
     h.browser_at_top=Some(false);for _ in 0..90 {h.frame(vec![]);}
     assert!(h.app.pet_enabled() && h.hit.height()>20.0,"离开浏览器或还原窗口后应恢复");
     h.browser_at_top=Some(true);for _ in 0..90 {h.frame(vec![]);}
@@ -2501,7 +2501,7 @@ fn resident_layout_gallery(){
         h
     }
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_RESIDENT_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_RESIDENT_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let scenes=[(true,1,false,false,false),(false,1,false,false,false),(true,3,false,false,false),(false,3,true,false,false),
         (true,3,true,false,false),(false,3,true,true,false),(false,5,false,false,false),(false,2,false,false,true)];
     for (i,(battery,accounts,music,focus,pet)) in scenes.into_iter().enumerate(){
@@ -2586,8 +2586,8 @@ fn kiro_connection_save_failure_keeps_the_original_account_and_cache(){
     h.app.quota.config.accounts.push(account.clone());h.app.quota.rows.insert(account.id.clone(),Ok(snapshot.clone()));let saved=h.app.quota.config.clone();
     let(connect,tx)=crate::quota::kiro::Connect::pending(Some(account));h.app.quota.kiro_connecting=Some(connect);
     tx.send(Ok(crate::quota::kiro::Connected{source:"new.json".into(),label:"新备注".into(),snapshot})).unwrap();
-    let original=std::env::var_os("DAOZAI_DATA_DIR").unwrap();std::fs::create_dir_all(&original).unwrap();let blocked=std::path::PathBuf::from(&original).join("kiro-blocked");std::fs::write(&blocked,"blocked").unwrap();std::env::set_var("DAOZAI_DATA_DIR",&blocked);
-    h.app.quota_tick();std::env::set_var("DAOZAI_DATA_DIR",original);
+    let original=std::env::var_os("YE_DAOZAI_DATA_DIR").unwrap();std::fs::create_dir_all(&original).unwrap();let blocked=std::path::PathBuf::from(&original).join("kiro-blocked");std::fs::write(&blocked,"blocked").unwrap();std::env::set_var("YE_DAOZAI_DATA_DIR",&blocked);
+    h.app.quota_tick();std::env::set_var("YE_DAOZAI_DATA_DIR",original);
     assert_eq!(h.app.quota.config,saved);assert!(h.app.quota.note.contains("配置目录"));assert_eq!(h.app.quota.rows["kiro"].as_ref().unwrap().windows[0].amount.as_ref().unwrap().remaining,900.0);
 }
 
@@ -2630,7 +2630,7 @@ fn kiro_logo_and_point_details_fit_the_card(){
     let label=text("月度额度剩余").expect("周期说明");let value=text("904.1 / 1000 点").expect("剩余量与总额");
     assert!(!label.intersects(value),"说明与数值不得重叠");
     assert!(h.shapes.iter().any(|shape|matches!(&shape.shape,egui::Shape::Text(text) if text.galley.text()=="Kiro · KIRO PRO")),"套餐名应显示");
-    if let Some(dest)=std::env::var_os("DAOZAI_KIRO_PREVIEW_DIR"){
+    if let Some(dest)=std::env::var_os("YE_DAOZAI_KIRO_PREVIEW_DIR"){
         let mut raster=crate::preview_raster::Raster::new((WIN_W*2.0) as usize,(WIN_H*2.0) as usize);
         let t=h.t+1.0/60.0;
         let env=Env{t,clock:"09:41:00".into(),today:"2026-10-31".into(),date:"10月31日 周六".into(),battery:h.power.0,charging:h.power.1,media:h.media.clone(),bt_ready:true,..Default::default()};
@@ -2671,7 +2671,7 @@ fn kiro_credits_follow_the_ring_on_the_resident_bar(){
 #[test]
 #[ignore="按需导出 Kiro 积分池、万元额套餐及设置明细"]
 fn kiro_credit_pools_gallery(){
-    let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for(skin,name)in [(crate::model::Skin::Classic,"dark"),(crate::model::Skin::GlassLight,"light")]{for pools in [false,true]{
         let mut h=H::new();h.app.settings.skin=skin;let mut snapshot=kiro_snapshot(10000.0,10000.0);
         if pools{snapshot=crate::quota::parse(crate::quota::Provider::Kiro,&serde_json::json!({"userInfo":{"userId":"ui-kiro-user"},"subscriptionInfo":{"subscriptionTitle":"KIRO PRO"},"usageBreakdownList":[{"resourceType":"CREDIT","usageLimitWithPrecision":1000,"currentUsageWithPrecision":1000,"nextDateReset":1796083200_i64,"freeTrialInfo":{"freeTrialStatus":"ACTIVE","usageLimit":500,"currentUsage":100,"freeTrialExpiry":1827619200_i64},"bonuses":[{"status":"ACTIVE","displayName":"加购点数","usageLimit":125,"currentUsage":25,"expiresAt":1827619200_i64}]}]})).unwrap();}
@@ -2694,7 +2694,7 @@ fn kiro_credit_pools_gallery(){
 fn kiro_resident_bar_preview(){
     use crate::quota::{Amount,Event,Provider,Snapshot,Window};
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let mut h=H::new();h.app.settings.pet=false;h.app.settings.show_battery=true;h.quota_accounts(1);
     h.app.quota.config.accounts.push(crate::quota::Account{id:"kiro".into(),provider:Provider::Kiro,alias:"Kiro".into(),source:"kiro.json".into(),slot:None,enabled:true,pinned:true});
     h.app.quota_event(Event{id:"kiro".into(),result:Ok(Snapshot{kiro:kiro_snapshot(904.09,1000.0).kiro,plan:"KIRO PRO".into(),at:chrono::Utc::now().timestamp(),
@@ -2719,7 +2719,7 @@ fn kiro_resident_bar_preview(){
 fn kiro_simulated_states_gallery(){
     use crate::quota::{Account,Event,Provider};
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let at=chrono::DateTime::parse_from_rfc3339("2026-11-11T01:41:00Z").unwrap().timestamp();
     let expires=chrono::DateTime::parse_from_rfc3339("2027-11-01T00:00:00Z").unwrap().timestamp();
     for(skin,theme)in [(crate::model::Skin::Classic,"dark"),(crate::model::Skin::GlassLight,"light")]{
@@ -2795,7 +2795,7 @@ fn kiro_simulated_states_gallery(){
 fn kiro_resident_states_gallery(){
     use crate::quota::{Account,Event,Provider};
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_KIRO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for(skin,theme)in [(crate::model::Skin::Classic,"dark"),(crate::model::Skin::GlassLight,"light")]{for mixed in [false,true]{
         let mut h=H::new();h.app.settings.skin=skin;h.app.settings.pet=false;h.app.settings.show_battery=true;
         h.app.settings.island_shape=if mixed{crate::model::IslandShape::Pill}else{crate::model::IslandShape::Notch};
@@ -2836,7 +2836,7 @@ fn quota_update_status_is_visible_for_every_provider_and_keeps_failed_data(){
         };
         snapshot.at=at;h.app.quota_event(Event{id:"preview-0".into(),result:Ok(snapshot)});
         h.app.show_page(6);
-        if let Some(dest)=std::env::var_os("DAOZAI_QUOTA_STATUS_PREVIEW_DIR"){
+        if let Some(dest)=std::env::var_os("YE_DAOZAI_QUOTA_STATUS_PREVIEW_DIR"){
             let dest=std::path::PathBuf::from(dest);std::fs::create_dir_all(&dest).unwrap();let mut raster=feature_raster();
             shoot_feature(&mut h,&mut raster,&dest,&format!("quota-{}",provider.name()),90,Some(H::local(300.0,60.0)),"2026-11-07");
         }
@@ -2905,7 +2905,7 @@ fn claude_local_quota_shows_the_record_time_and_does_not_invent_resets(){
     let label=texts.iter().find(|t|t.galley.text()=="Claude · 本地记录").expect("应明确标注本地来源");
     let time=chrono::DateTime::from_timestamp(at,0).unwrap().with_timezone(&chrono::Local).format("%H:%M").to_string();
     let timestamp=texts.iter().find(|t|t.galley.text()==format!("本地记录 · {time}")).expect("应显示官方缓存的实际记录时间");assert!(!label.visual_bounding_rect().intersects(timestamp.visual_bounding_rect()));assert_eq!(texts.iter().filter(|t|t.galley.text()=="重置时间未知").count(),2);
-    if let Some(path)=std::env::var_os("DAOZAI_CLAUDE_LOCAL_PREVIEW"){
+    if let Some(path)=std::env::var_os("YE_DAOZAI_CLAUDE_LOCAL_PREVIEW"){
         raster.buf.fill([0.15,0.15,0.15,1.0]);raster.draw(&h.ctx.tessellate(shapes,2.0),2.0);let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);let image=image::RgbaImage::from_raw((crate::app::CANVAS_W*2.0) as u32,(WIN_H*2.0) as u32,rgba).unwrap();image::imageops::crop_imm(&image,200,0,880,350).to_image().save(path).unwrap();
     }
 }
@@ -3394,9 +3394,9 @@ fn mascot_stays_beside_the_clock_and_all_resident_components(){
     h.app.pomo.running=true;h.app.pomo.remaining=1200.0;
     for _ in 0..120 {h.frame(vec![]);}let width=h.app.current_width();
     h.app.settings.pet=true;for _ in 0..120 {h.frame(vec![]);}
-    assert!((h.app.current_width()-width-44.0).abs()<0.1,"岛仔应有独立常驻位置");
+    assert!((h.app.current_width()-width-44.0).abs()<0.1,"椰岛仔应有独立常驻位置");
     assert_eq!(h.quota_centers().len(),5,"五个常驻账号均显示额度环");
-    assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Text(t) if t.galley.text()=="09:41")),"岛仔与时钟共存");
+    assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Text(t) if t.galley.text()=="09:41")),"椰岛仔与时钟共存");
     assert!(h.shapes.iter().filter(|s|matches!(&s.shape,egui::Shape::Path(p) if p.points.len()==13 && (p.stroke.width-3.6).abs()<0.01)).count()>=2,"没有闲置或悬停也应显示眼睛");
 }
 
@@ -3408,12 +3408,12 @@ fn mascot_and_album_share_the_single_line_lyric_island(){
         artwork:Some(std::sync::Arc::new(egui::ColorImage::new([32,32],egui::Color32::from_rgb(70,120,220)))),..Default::default()};
     h.app.set_lyrics("Track","Artist",120.0,crate::lyrics::parse_lrc("[00:05]晚风吹过了山岗\n[00:15]下一句"));
     for _ in 0..120 {h.frame(vec![]);}
-    assert!((h.app.current_width()-348.0).abs()<0.1,"专辑、岛仔与原有歌词宽度一起保留");
+    assert!((h.app.current_width()-348.0).abs()<0.1,"专辑、椰岛仔与原有歌词宽度一起保留");
     let texture=h.app.music_artwork.as_ref().unwrap().1.id();
-    assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Rect(r) if r.brush.as_ref().is_some_and(|b|b.fill_texture_id==texture))),"专辑封面不能被岛仔替代");
+    assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Rect(r) if r.brush.as_ref().is_some_and(|b|b.fill_texture_id==texture))),"专辑封面不能被椰岛仔替代");
     let text=h.shapes.iter().find_map(|s|match &s.shape {egui::Shape::Text(t) if t.galley.text()=="晚风吹过了山岗"=>Some(t),_=>None}).unwrap();
     assert_eq!(text.galley.rows.len(),1,"保留单行歌词");
-    assert!((text.pos.x+text.galley.rect.center().x-WIN_W/2.0-24.0).abs()<1.5,"歌词在封面和岛仔右侧居中");
+    assert!((text.pos.x+text.galley.rect.center().x-WIN_W/2.0-24.0).abs()<1.5,"歌词在封面和椰岛仔右侧居中");
     assert!(h.shapes.iter().filter(|s|matches!(&s.shape,egui::Shape::Path(p) if p.points.len()==13 && (2.79..=3.61).contains(&p.stroke.width))).count()>=2);
 }
 
@@ -3474,7 +3474,7 @@ fn music_mascot_plays_new_expressions_and_resumes_after_interruptions(){
     for _ in 0..1080 {h.frame(vec![]);}
     let expression=h.app.pet.expressions.current().expect("听歌状态也应显示新表情");
     assert_eq!(h.app.pet_state(),PetState::Music);
-    let atlas=h.ctx.tex_manager().read().allocated().find_map(|(id,meta)|(meta.name=="daozai-expressions").then_some(*id)).unwrap();
+    let atlas=h.ctx.tex_manager().read().allocated().find_map(|(id,meta)|(meta.name=="ye-daozai-expressions").then_some(*id)).unwrap();
     assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Mesh(mesh)if mesh.texture_id==atlas)));
     h.app.alert("系统音量","音量 60%",5,false);h.frame(vec![]);
     assert_eq!(h.app.pet_state(),PetState::Awake);assert!(h.app.pet.expressions.current().is_none());
@@ -3561,8 +3561,8 @@ fn mascot_feedback_plays_beside_notice_and_respects_switches(){
     h.app.drink_water();h.app.alert("待办到时间了","测试提醒",4,false);
     for _ in 0..60 {h.frame(vec![]);}assert_eq!(h.app.pet_state(),PetState::Satisfied);
     assert!(h.app.notice.is_some());
-    let atlas=h.ctx.tex_manager().read().allocated().find_map(|(id,meta)|(meta.name=="daozai-expressions").then_some(*id)).expect("表情图集已加载");
-    assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Mesh(mesh) if mesh.texture_id==atlas)),"通知期间岛仔仍应可见");
+    let atlas=h.ctx.tex_manager().read().allocated().find_map(|(id,meta)|(meta.name=="ye-daozai-expressions").then_some(*id)).expect("表情图集已加载");
+    assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Mesh(mesh) if mesh.texture_id==atlas)),"通知期间椰岛仔仍应可见");
     for _ in 0..240 {h.frame(vec![]);}assert_eq!(h.app.pet_state(),PetState::Awake);
     h.app.notice=None;for _ in 0..240 {h.frame(vec![]);}assert_eq!(h.app.pet_state(),PetState::Awake);
     h.app.drink_water();h.app.settings.minimal=true;h.frame(vec![]);assert!(h.app.pet.reaction.is_none());
@@ -3574,8 +3574,8 @@ fn mascot_feedback_plays_beside_notice_and_respects_switches(){
 fn mascot_expression_gallery(){
     use crate::extras::PetState;
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::env::var_os("DAOZAI_PET_PREVIEW_DIR").map(std::path::PathBuf::from)
-        .unwrap_or_else(||std::env::temp_dir().join(format!("daozai-pet-preview-{}",std::process::id())));
+    let dest=std::env::var_os("YE_DAOZAI_PET_PREVIEW_DIR").map(std::path::PathBuf::from)
+        .unwrap_or_else(||std::env::temp_dir().join(format!("ye-daozai-pet-preview-{}",std::process::id())));
     std::fs::create_dir_all(&dest).unwrap();
     let states=[("awake",PetState::Awake),("curious",PetState::Curious),("waking",PetState::Waking),
         ("happy",PetState::Happy),("satisfied",PetState::Satisfied),("music",PetState::Music),
@@ -3619,7 +3619,7 @@ fn mascot_atlas_respects_visibility_and_skin_switches(){
         for expression in Expression::ALL {
             h.app.pet.expressions.play(expression);for _ in 0..30 {h.frame(vec![]);}
             assert_eq!(h.app.pet.expressions.current(),Some(expression));
-            let atlas=h.ctx.tex_manager().read().allocated().find_map(|(id,meta)|(meta.name=="daozai-expressions").then_some(*id)).unwrap();
+            let atlas=h.ctx.tex_manager().read().allocated().find_map(|(id,meta)|(meta.name=="ye-daozai-expressions").then_some(*id)).unwrap();
             let drawn=h.shapes.iter().find_map(|shape|match &shape.shape {
                 egui::Shape::Mesh(mesh) if mesh.texture_id==atlas=>Some(mesh),_=>None,
             }).expect("新表情应画在常驻岛上");
@@ -3639,7 +3639,7 @@ fn mascot_atlas_respects_visibility_and_skin_switches(){
 fn mascot_integrated_expression_gallery(){
     use crate::pet_expressions::Expression;
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_PET_INTEGRATED_PREVIEW").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_PET_INTEGRATED_PREVIEW").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
     for (name,skin) in [("classic",crate::model::Skin::Classic),("cream",crate::model::Skin::Cream),("glass",crate::model::Skin::GlassLight)] {
         let mut h=H::new();h.app.settings.pet=true;h.app.settings.minimal=false;h.app.settings.skin=skin;
@@ -3698,8 +3698,8 @@ fn minimal_island_hides_messenger_notices_until_expanded(){
 #[ignore="生成来电响铃时的岛体逐帧画面，供人工查看"]
 fn preview_wechat_call_ringing(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::env::var_os("DAOZAI_CALL_PREVIEW_DIR").map(std::path::PathBuf::from)
-        .unwrap_or_else(||std::env::temp_dir().join(format!("daozai-call-preview-{}",std::process::id())));
+    let dest=std::env::var_os("YE_DAOZAI_CALL_PREVIEW_DIR").map(std::path::PathBuf::from)
+        .unwrap_or_else(||std::env::temp_dir().join(format!("ye-daozai-call-preview-{}",std::process::id())));
     std::fs::create_dir_all(&dest).unwrap();
     // 单条提醒 / 响铃期间反复提醒 / 来电窗口在另一个进程里（被当成第二个账号）。
     for (scenario,minimal) in [("single",false),("single",true),("ringing",false),("ringing",true),("twoproc",false),("twoproc",true)] {
@@ -3757,7 +3757,7 @@ fn windows_notification_echo_does_not_duplicate_own_reminders(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let mut h=H::new();h.frame(vec![]);
     h.app.alert("喝水时间到了","喝点水吧",2,true);
     h.app.settings.read_notifications=true;h.app.receive_notification("Windows 通知".into(),"test".into(),"喝水时间到了 · 喝点水吧".into());assert_eq!(h.app.history.len(),1);
-    assert_eq!(h.app.alerts.len(),1,"岛仔发出的系统通知不能再次进入岛内通知队列");
+    assert_eq!(h.app.alerts.len(),1,"椰岛仔发出的系统通知不能再次进入岛内通知队列");
     h.app.notification_apps.items.push(("mail".into(),"邮件".into(),true));h.app.receive_notification("邮件".into(),"mail".into(),"收到一封新邮件".into());assert_eq!(h.app.alerts.len(),2);assert!(h.app.notification_bell_until>h.app.t);
 }
 
@@ -3926,7 +3926,7 @@ fn todo_edit_choice_keeps_the_selected_item_when_an_earlier_item_is_deleted(){
 #[test]
 #[ignore="按需导出待办完成排序和点选编辑的实际画面"]
 fn todo_edit_choice_gallery(){
-    let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_TODO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_TODO_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for skin in [crate::model::Skin::Classic,crate::model::Skin::Cream]{for choosing in [false,true]{
         let mut h=H::new();h.app.settings.skin=skin;h.app.todos.items=["整理会议资料","确认本周安排","已经完成的任务"].into_iter().map(crate::model::TodoItem::new).collect();h.app.todos.items[2].done_on=Some("2026-11-06".into());h.app.show_page(4);h.app.todo_choosing=choosing;
         let mut raster=feature_raster();shoot_feature(&mut h,&mut raster,&dest,&format!("todo-{}-{}",skin.key(),if choosing{"choose"}else{"list"}),90,Some(H::local(175.0,70.0)),"2026-11-06");
@@ -4249,7 +4249,7 @@ fn display_choice_saves_and_keeps_disconnected_selection(){
     for _ in 0..3{frame(&mut h,&mut raster,vec![]);}
     assert!(h.app.settings.display_id.is_empty());click(&mut h,&mut raster,"跟随主屏");
     for _ in 0..20{frame(&mut h,&mut raster,vec![]);}
-    if let Some(path)=std::env::var_os("DAOZAI_DISPLAY_PREVIEW"){
+    if let Some(path)=std::env::var_os("YE_DAOZAI_DISPLAY_PREVIEW"){
         raster.buf.fill([0.0,0.0,0.0,1.0]);raster.draw(&h.ctx.tessellate(h.shapes.clone(),1.0),1.0);
         let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);image::save_buffer(path,&rgba,690,560,image::ColorType::Rgba8).unwrap();
     }
@@ -4329,7 +4329,7 @@ fn lyric_app_notification_respects_preview_and_restores_current_lyrics(){
 #[ignore="按需导出歌词模式下正文开关的通知画面"]
 fn lyric_app_notification_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_APP_NOTICE_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_APP_NOTICE_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for preview in [false,true]{
         let mut h=H::new();h.app.settings.island_lyrics=true;h.app.settings.read_notifications=true;h.app.settings.notification_preview=preview;
         h.media=crate::smtc::NowPlaying{title:"Track".into(),artist:"Artist".into(),playing:true,position:7.0,duration:120.0,..Default::default()};
@@ -4382,7 +4382,7 @@ fn notification_style_follows_the_current_lyric_mode_without_a_new_notice(){
 #[ignore="按需导出普通模式与岛上歌词模式的通知画面"]
 fn notice_mode_layout_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_NOTICE_MODES_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_NOTICE_MODES_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for lyrics in [false,true]{
         let mut h=H::new();h.app.settings.pet=true;h.app.settings.island_lyrics=lyrics;h.app.pomo.running=lyrics;
         h.media=crate::smtc::NowPlaying{title:"Track".into(),artist:"Artist".into(),playing:true,position:7.0,duration:120.0,..Default::default()};
@@ -4427,7 +4427,7 @@ fn lyric_caps_lock_notice_keeps_one_glass_outline(){
                 assert_eq!(rims,1,"胶囊连接处不能重复绘制玻璃描边");
             }
             raster.update_textures(&output.textures_delta);let primitives=h.ctx.tessellate(output.shapes,ppp);
-            if ppp==1.5{if let Some(name)=match frame{45=>Some("before"),90=>Some("on"),135=>Some("off"),359=>Some("after"),_=>None}{if let Some(dest)=std::env::var_os("DAOZAI_CAPS_LOCK_PREVIEW_DIR"){
+            if ppp==1.5{if let Some(name)=match frame{45=>Some("before"),90=>Some("on"),135=>Some("off"),359=>Some("after"),_=>None}{if let Some(dest)=std::env::var_os("YE_DAOZAI_CAPS_LOCK_PREVIEW_DIR"){
                 let dest=std::path::PathBuf::from(dest);std::fs::create_dir_all(&dest).unwrap();raster.buf.fill([0.94,0.95,0.97,1.0]);raster.draw(&primitives,ppp);
                 let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);let image=image::RgbaImage::from_raw(raster.w as u32,raster.h as u32,rgba).unwrap();
                 image::imageops::crop_imm(&image,(140.0*ppp) as u32,0,(440.0*ppp) as u32,(80.0*ppp) as u32).to_image().save(dest.join(format!("{}-{}-{name}.png",skin.key(),shape.key()))).unwrap();
@@ -4475,11 +4475,11 @@ fn an_open_page_and_lyrics_can_coexist_with_notifications_and_the_bell(){
 fn right_notice_preview(){
     use std::io::Write;
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let mut h=H::new();
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_RIGHT_NOTICE_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_RIGHT_NOTICE_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     h.app.settings.pet=true;h.app.settings.island_lyrics=true;h.app.pomo.running=true;
     h.media=crate::smtc::NowPlaying{title:"Track".into(),artist:"Artist".into(),playing:true,position:7.0,duration:120.0,..Default::default()};
     h.app.set_lyrics("Track","Artist",120.0,crate::lyrics::parse_lrc("[00:00]晚风吹过了山岗\n[01:00]下一句"));
-    let mut video=std::process::Command::new(std::env::var_os("DAOZAI_FFMPEG").unwrap_or_else(||"ffmpeg".into())).args(["-y","-loglevel","error","-f","rawvideo","-pix_fmt","rgba","-s","1920x405","-r","30","-i","-","-vf","crop=1440:210:105:0","-c:v","libx264","-crf","19","-pix_fmt","yuv420p"]).arg(dest.join("右侧通知演示.mp4")).stdin(std::process::Stdio::piped()).spawn().unwrap();
+    let mut video=std::process::Command::new(std::env::var_os("YE_DAOZAI_FFMPEG").unwrap_or_else(||"ffmpeg".into())).args(["-y","-loglevel","error","-f","rawvideo","-pix_fmt","rgba","-s","1920x405","-r","30","-i","-","-vf","crop=1440:210:105:0","-c:v","libx264","-crf","19","-pix_fmt","yuv420p"]).arg(dest.join("右侧通知演示.mp4")).stdin(std::process::Stdio::piped()).spawn().unwrap();
     let mut pipe=video.stdin.take().unwrap();let mut raster=crate::preview_raster::Raster::new(1920,405);
     for frame in 0..420{
         let t=frame as f64/30.0;
@@ -4730,7 +4730,7 @@ fn calendar_island_collapses_and_reopens_on_the_same_page() {
 #[ignore="按需导出岛内日程的实际渲染画面"]
 fn calendar_layout_gallery() {
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_CALENDAR_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_CALENDAR_PREVIEW_DIR").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
     for mode in ["agenda","dingtalk","wecom","empty","loading","failed","disconnected","local-editor","local","local-all-day","mixed"] {
         let mut h=H::new();
@@ -5127,7 +5127,7 @@ fn full_mail_reader_keeps_the_entire_body_and_scrolls_independently(){
 #[ignore="按需导出多格式邮件正文的实际画面"]
 fn mail_reader_rich_html_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_MAIL_GALLERY_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_MAIL_GALLERY_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let mut h=H::new();h.ctx.set_embed_viewports(true);
     let html=r#"<html><head><style>body{font-family:Arial}</style></head><body>
         <div style="display:none;max-height:0;overflow:hidden">&#8203;&#8203; 这是一段只为收件箱预览存在的填充文字 &#8203;</div>
@@ -5250,7 +5250,7 @@ fn mail_microsoft_custom_host_and_address_disable_password_actions(){
 #[ignore="按需导出微软邮箱暂不支持提示的实际画面"]
 fn mail_microsoft_settings_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_MAIL_GALLERY_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_MAIL_GALLERY_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for custom in [false,true]{
         let mut h=H::new();h.app.open_mail_settings();h.ctx.set_embed_viewports(false);
         h.app.mail.accounts.clear();
@@ -5278,7 +5278,7 @@ fn mail_microsoft_settings_gallery(){
 #[ignore="按需导出提醒选择器与邮件全文的实际画面"]
 fn reminder_and_reader_layout_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_READER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_READER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for picker in [true,false]{
         let mut h=H::new();h.ctx.set_embed_viewports(true);
         h.app.todos.items=vec![crate::model::TodoItem{text:"提交产品方案".into(),due:None,done_on:None,reminded:false,..Default::default()}];h.app.open_task_reminder(0);
@@ -5326,7 +5326,7 @@ fn remove_icons_are_centered_in_their_buttons_at_each_scale(){
 #[ignore="按需检查全部页面与设置的实际排版"]
 fn ui_alignment_layout_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_UI_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_UI_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     fn fixture()->H{
         let mut h=H::new();h.app.settings.pet=false;h.app.settings.island_lyrics=false;h.power=(Some(76),false);
         h.media=crate::smtc::NowPlaying{title:"愿每一个认真生活的人，都能在平凡的日子里找到属于自己的光".into(),artist:"The Lanterns · Live Session".into(),duration:240.0,position:65.0,playing:true,..Default::default()};
@@ -5513,7 +5513,7 @@ fn mailbox_scroll_reaches_older_mail_without_changing_pages() {
 #[ignore="按需检查邮箱列表和验证码来源的实际画面"]
 fn mailbox_readability_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_MAIL_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_MAIL_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for variant in 0..5 {
         let multiple=variant==1;let detail=variant==2;
         let mut h=H::new();h.app.settings.pet=false;h.app.settings.mail_sync_operations=true;
@@ -5743,7 +5743,7 @@ fn settings_theme_follows_system_and_preserves_island_style() {
                 h.ctx.data_mut(|d|d.insert_temp(egui::Id::new("settings-system-theme"),(std::time::Instant::now(),system)));
                 let root=h.ctx.run(Default::default(),|ctx|h.app.settings_ui(ctx,false));
                 assert!(h.ctx.style().visuals.dark_mode,"设置页主题不能泄漏到岛体");
-                let commands=&root.viewport_output[&egui::ViewportId::from_hash_of("daozai-settings")].commands;
+                let commands=&root.viewport_output[&egui::ViewportId::from_hash_of("ye-daozai-settings")].commands;
                 assert!(commands.iter().any(|c|matches!(c,egui::ViewportCommand::SetTheme(t) if *t==if dark{egui::SystemTheme::Dark}else{egui::SystemTheme::Light})),"原生边框必须与页面一致");
                 let child=output.lock().unwrap().take().unwrap();
                 if frame==2 {
@@ -5774,7 +5774,7 @@ fn settings_theme_follows_system_and_preserves_island_style() {
                 assert!(child.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Rect(r) if r.fill==background && r.rect.width()>400.0)));
                 raster.update_textures(&root.textures_delta);raster.update_textures(&child.textures_delta);
                 if frame==2 {
-                    if let Some(dest)=std::env::var_os("DAOZAI_THEME_PREVIEW_DIR") {
+                    if let Some(dest)=std::env::var_os("YE_DAOZAI_THEME_PREVIEW_DIR") {
                         let dest=std::path::PathBuf::from(dest);std::fs::create_dir_all(&dest).unwrap();
                         raster.buf.fill([0.0,0.0,0.0,1.0]);raster.draw(&h.ctx.tessellate(child.shapes,child.pixels_per_point),child.pixels_per_point);
                         let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);
@@ -5791,7 +5791,7 @@ fn settings_theme_follows_system_and_preserves_island_style() {
 #[ignore = "按需导出关于页支持作者预览"]
 fn about_support_preview() {
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_SUPPORT_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_SUPPORT_PREVIEW_DIR").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
     let mut h=H::new();h.app.open_settings();h.app.settings_tab=9;h.ctx.set_embed_viewports(false);
     let output=std::sync::Arc::new(std::sync::Mutex::new(None));let capture=output.clone();
@@ -5888,7 +5888,7 @@ fn mail_report_save_and_failure_paths() {
         h.app.mail.form.email="probe@example.invalid".into();click(&mut h,button);
         assert!(h.app.mail.note.contains("请先填授权码"));assert!(h.app.mail.accounts.is_empty());
     }
-    let email=format!("daozai-crash-probe-{}@example.invalid",std::process::id());
+    let email=format!("ye-daozai-crash-probe-{}@example.invalid",std::process::id());
     struct Cleanup(String);impl Drop for Cleanup{fn drop(&mut self){crate::mail::secrets::delete(&self.0);}}
     let _cleanup=Cleanup(email.clone());
     h.app.mail.form.email=email.clone();h.app.mail.form.password="synthetic-test-secret".into();
@@ -6015,7 +6015,7 @@ fn clock_period_visually_centers_with_digits() {
         }
         raster.update_textures(&output.textures_delta);
         if scale==2.0 {
-            if let Some(dest)=std::env::var_os("DAOZAI_CLOCK_ALIGNMENT_PREVIEW") {
+            if let Some(dest)=std::env::var_os("YE_DAOZAI_CLOCK_ALIGNMENT_PREVIEW") {
                 raster.buf.fill([0.0,0.0,0.0,1.0]);raster.draw(&h.ctx.tessellate(output.shapes,output.pixels_per_point),output.pixels_per_point);
                 let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);
                 image::save_buffer(dest,&rgba,420,230,image::ColorType::Rgba8).unwrap();
@@ -6058,7 +6058,7 @@ fn avoidance_picker_add_remove_and_save() {
     let mut out=draw(&mut h,vec![]);raster.update_textures(&out.textures_delta);
     for _ in 0..40 {std::thread::sleep(std::time::Duration::from_millis(10));out=draw(&mut h,vec![]);raster.update_textures(&out.textures_delta);}
     assert!(out.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Text(t) if t.galley.text()=="浏览器规则已覆盖")));
-    if let Some(dest)=std::env::var_os("DAOZAI_AVOID_PREVIEW_DIR") {
+    if let Some(dest)=std::env::var_os("YE_DAOZAI_AVOID_PREVIEW_DIR") {
         std::fs::create_dir_all(&dest).unwrap();raster.buf.fill([0.0,0.0,0.0,1.0]);
         raster.draw(&h.ctx.tessellate(out.shapes.clone(),out.pixels_per_point),out.pixels_per_point);
         let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);image::save_buffer(std::path::Path::new(&dest).join("添加应用.png"),&rgba,600,560,image::ColorType::Rgba8).unwrap();
@@ -6075,7 +6075,7 @@ fn avoidance_picker_add_remove_and_save() {
     let mut out=draw(&mut h,vec![]);raster.update_textures(&out.textures_delta);
     for _ in 0..40{std::thread::sleep(std::time::Duration::from_millis(20));out=draw(&mut h,vec![]);raster.update_textures(&out.textures_delta);}
     assert!(!out.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Text(t) if t.galley.text()=="记事本")),"图标区不应常驻显示应用名称");
-    if let Some(dest)=std::env::var_os("DAOZAI_AVOID_PREVIEW_DIR") {
+    if let Some(dest)=std::env::var_os("YE_DAOZAI_AVOID_PREVIEW_DIR") {
         raster.buf.fill([0.0,0.0,0.0,1.0]);raster.draw(&h.ctx.tessellate(out.shapes.clone(),out.pixels_per_point),out.pixels_per_point);
         let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);image::save_buffer(std::path::Path::new(&dest).join("图标区域.png"),&rgba,600,560,image::ColorType::Rgba8).unwrap();
     }
@@ -6147,7 +6147,7 @@ fn compact_canvas_preserves_panel_and_notice_pixels(){
                 raster.buf.fill([0.0;4]);raster.draw(&h.ctx.tessellate(output.shapes,output.pixels_per_point),output.pixels_per_point);
                 let mut pixels=Vec::new();raster.to_rgba8(&mut pixels);
                 if page.is_none() && notice && frame==95 {
-                    if let Some(dir)=std::env::var_os("DAOZAI_GRAPHICS_PREVIEW") {let dir=std::path::PathBuf::from(dir);std::fs::create_dir_all(&dir).unwrap();image::save_buffer(dir.join(format!("canvas-{width}.png")),&pixels,1280,270,image::ColorType::Rgba8).unwrap();}
+                    if let Some(dir)=std::env::var_os("YE_DAOZAI_GRAPHICS_PREVIEW") {let dir=std::path::PathBuf::from(dir);std::fs::create_dir_all(&dir).unwrap();image::save_buffer(dir.join(format!("canvas-{width}.png")),&pixels,1280,270,image::ColorType::Rgba8).unwrap();}
                 }
                 rgba.extend(pixels);
             }
@@ -6241,7 +6241,7 @@ fn compact_font_atlas_preserves_panel_and_notice_pixels(){
                 raster.buf.fill([0.0;4]);raster.draw(&h.ctx.tessellate(output.shapes,output.pixels_per_point),output.pixels_per_point);
                 let mut pixels=Vec::new();raster.to_rgba8(&mut pixels);
                 if page.is_none() && notice && frame==95 {
-                    if let Some(dir)=std::env::var_os("DAOZAI_GRAPHICS_PREVIEW") {let dir=std::path::PathBuf::from(dir);std::fs::create_dir_all(&dir).unwrap();image::save_buffer(dir.join(format!("atlas-{texture_side}.png")),&pixels,1280,270,image::ColorType::Rgba8).unwrap();}
+                    if let Some(dir)=std::env::var_os("YE_DAOZAI_GRAPHICS_PREVIEW") {let dir=std::path::PathBuf::from(dir);std::fs::create_dir_all(&dir).unwrap();image::save_buffer(dir.join(format!("atlas-{texture_side}.png")),&pixels,1280,270,image::ColorType::Rgba8).unwrap();}
                 }
                 rgba.extend(pixels);
             }
@@ -6347,10 +6347,10 @@ fn bluetooth_switch_clears_notices_and_restarts_with_fresh_baseline(){
 }
 
 #[test]
-#[ignore = "按需导出五套皮肤的预览图：DAOZAI_SKIN_PREVIEW_DIR=目录 cargo test skin_gallery -- --ignored"]
+#[ignore = "按需导出五套皮肤的预览图：YE_DAOZAI_SKIN_PREVIEW_DIR=目录 cargo test skin_gallery -- --ignored"]
 fn skin_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_SKIN_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_SKIN_PREVIEW_DIR").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
     let (w,hgt)=((crate::app::CANVAS_W*2.0) as usize,(WIN_H*2.0) as usize);
     // 日落渐变 + 几条城市剪影，用来观察半透明皮肤的通透感。
@@ -6422,7 +6422,7 @@ fn skin_gallery(){
 #[ignore = "按需导出：带 AI 额度与吉祥物的收起态，以及设置页常驻排列预览"]
 fn skin_gallery_resident(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_SKIN_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_SKIN_PREVIEW_DIR").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
     for skin in crate::model::Skin::ALL {
         for shape in crate::model::IslandShape::ALL {
@@ -6470,14 +6470,14 @@ fn skin_gallery_resident(){
 #[ignore = "按需导出：浅色皮肤下每个页面的展开态，用于排查配色"]
 fn skin_gallery_pages(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_SKIN_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_SKIN_PREVIEW_DIR").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
-    let skins=std::env::var("DAOZAI_SKINS").unwrap_or_else(|_|"glass_light,cream,classic".into());
+    let skins=std::env::var("YE_DAOZAI_SKINS").unwrap_or_else(|_|"glass_light,cream,classic".into());
     for skin in skins.split(',').map(crate::model::Skin::parse) {
         for page in 0..9usize {
             let mut h=H::new();h.app.settings.skin=skin;h.app.settings.island_shape=crate::model::IslandShape::Pill;
             h.quota_accounts(2);
-            h.app.todos.items.push(crate::model::TodoItem{text:"整理岛仔皮肤反馈".into(),done_on:None,due:Some("2026-11-05 10:00".into()),reminded:false,..Default::default()});
+            h.app.todos.items.push(crate::model::TodoItem{text:"整理椰岛仔皮肤反馈".into(),done_on:None,due:Some("2026-11-05 10:00".into()),reminded:false,..Default::default()});
             h.app.todos.items.push(crate::model::TodoItem{text:"已完成的事项".into(),done_on:Some("2026-11-04".into()),due:None,reminded:false,..Default::default()});
             h.media=crate::smtc::NowPlaying{title:"Paper Boats".into(),artist:"The Lanterns".into(),position:64.0,duration:201.0,playing:true,..Default::default()};
             let (w,hgt)=((crate::app::CANVAS_W*2.0) as usize,(WIN_H*2.0) as usize);
@@ -6508,7 +6508,7 @@ fn skin_gallery_pages(){
 fn deepseek_balance_gallery(){
     use crate::quota::{Provider,Event};
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for skin in [crate::model::Skin::Classic,crate::model::Skin::Cream,crate::model::Skin::GlassLight,crate::model::Skin::GlassDark]{
     for (name,amount,stale,count) in [("normal","4.18",false,2),("large","12800.00",false,2),("overflow","128000.00",false,5),("stale","12800.00",true,2),("loading","4.18",false,2),("error","4.18",false,2)] {for open in [false,true]{
         let mut h=H::new();h.app.settings.pet=false;h.app.settings.skin=skin;h.app.settings.show_battery=true;h.quota_accounts(count);
@@ -6555,7 +6555,7 @@ fn deepseek_compact_amount_fits_text_and_opens_account(){
 #[ignore = "按需导出 DeepSeek 连接状态提示"]
 fn deepseek_connection_preview(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let mut h=H::new();h.app.quota.provider=crate::quota::Provider::DeepSeek;h.app.quota.note="DeepSeek 已连接".into();
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));
     let mut raster=crate::preview_raster::Raster::new(1200,1400);
     for frame in 0..8{
         let raw=egui::RawInput{screen_rect:Some(Rect::from_min_size(Pos2::ZERO,Vec2::new(600.0,700.0))),time:Some(frame as f64/60.0),viewports:std::iter::once((egui::ViewportId::ROOT,egui::ViewportInfo{native_pixels_per_point:Some(2.0),..Default::default()})).collect(),..Default::default()};
@@ -6578,7 +6578,7 @@ fn deepseek_resident_preview_does_not_overlap_icons(){
             let whale=output.shapes.iter().find_map(|shape|if let egui::Shape::Mesh(mesh)=&shape.shape{let rect=mesh.calc_bounds();((rect.width()-24.0).abs()<0.1).then_some(rect)}else{None}).expect("DeepSeek 图标");
             let claude=circles.iter().find(|c|c.stroke.color==egui::Color32::from_rgb(255,116,26)&&c.radius>9.0).expect("Claude 圆环");
             assert!(whale.left()>claude.center.x+claude.radius+4.0,"DeepSeek 不应覆盖前一枚图标");
-            if let Some(dest)=std::env::var_os("DAOZAI_DEEPSEEK_PREVIEW_DIR"){
+            if let Some(dest)=std::env::var_os("YE_DAOZAI_DEEPSEEK_PREVIEW_DIR"){
                 raster.buf.fill([0.1,0.1,0.1,1.0]);raster.draw(&h.ctx.tessellate(output.shapes,output.pixels_per_point),output.pixels_per_point);let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);image::save_buffer(std::path::PathBuf::from(dest).join("resident-preview.png"),&rgba,1200,380,image::ColorType::Rgba8).unwrap();
             }
         }
@@ -6625,7 +6625,7 @@ fn quota_cards_expose_names_colors_settings_and_connection(){
 #[test]
 #[ignore = "按需导出卡片式 AI 额度设置页"]
 fn quota_cards_settings_gallery(){
-    let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));
+    let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));
     for (name,width,light,dialog) in [("dark",690.0,false,false),("light",690.0,true,false),("wide",900.0,false,false),("connect",690.0,false,true),("narrow",600.0,false,false)]{
         let mut h=H::new();h.quota_accounts(2);h.app.quota.config.accounts[0].alias="本机账号".into();h.app.quota.config.accounts[1].alias="桌面版 1".into();
         for (i,remaining) in [54.0,72.0].into_iter().enumerate(){let account_id=h.app.quota.config.accounts[i].id.clone();h.app.quota_event(crate::quota::Event{id:account_id,result:Ok(crate::quota::Snapshot{windows:vec![crate::quota::Window{label:"5 小时".into(),seconds:Some(18000),remaining:remaining+20.0,reset:None,amount:None},crate::quota::Window{label:"本周".into(),seconds:Some(604800),remaining,reset:None,amount:None}],at:chrono::Utc::now().timestamp(),..Default::default()})});}
@@ -6672,7 +6672,7 @@ fn shoot_feature(h:&mut H,raster:&mut crate::preview_raster::Raster,dest:&std::p
 #[ignore="按需导出每周待办与剪贴板的实际画面"]
 fn feature_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_FEATURE_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_FEATURE_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let today="2026-11-04";// 周三
     let todos=||{
         let mut a=crate::model::TodoItem::new("写周报");a.repeat=0b001_0000;
@@ -6695,11 +6695,11 @@ fn feature_gallery(){
     let mut h=H::new();let mut r=feature_raster();h.app.show_page(3);h.app.shelf_tab=1;
     shoot_feature(&mut h,&mut r,&dest,"clip-empty",60,Some(H::local(120.0,60.0)),today);
     {let mut hist=h.app.clipboard.lock();hist.items.clear();
-        for (i,t) in ["https://github.com/Renly1994/xiaotang-daozai/releases","会议纪要：\n1. 周三前确认岛仔竖版方案\n2. 剪贴板记录上线","13800138000","SELECT * FROM todo WHERE repeat > 0 ORDER BY due;","验证码 482913"].iter().enumerate(){hist.push(t,&format!("09:{:02}",30+i));}
+        for (i,t) in ["https://example.invalid/ye-daozai/releases","会议纪要：\n1. 周三前确认椰岛仔竖版方案\n2. 剪贴板记录上线","13800138000","SELECT * FROM todo WHERE repeat > 0 ORDER BY due;","验证码 482913"].iter().enumerate(){hist.push(t,&format!("09:{:02}",30+i));}
         hist.items[3].pinned=true;}
     shoot_feature(&mut h,&mut r,&dest,"clip-list",30,Some(H::local(200.0,66.0)),today);
     h.app.shelf_tab=0;
-    let file=std::env::temp_dir().join("岛仔周报.docx");std::fs::write(&file,b"x").unwrap();h.app.shelf.items=vec![file];
+    let file=std::env::temp_dir().join("椰岛仔周报.docx");std::fs::write(&file,b"x").unwrap();h.app.shelf.items=vec![file];
     shoot_feature(&mut h,&mut r,&dest,"shelf-files",30,Some(H::local(120.0,60.0)),today);
     h.app.confirm_clear=Some(h.app.t);
     shoot_feature(&mut h,&mut r,&dest,"shelf-confirm",5,Some(H::local(120.0,60.0)),today);
@@ -6744,7 +6744,7 @@ fn shoot_side(h:&mut H,raster:&mut crate::preview_raster::Raster,dest:&std::path
 #[ignore="按需导出左右停靠的实际画面"]
 fn side_dock_gallery(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_FEATURE_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_FEATURE_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let (w,hgt)=(crate::side_dock::SIDE_W,crate::side_dock::SIDE_H);
     for (dock,shape,skin) in [(crate::model::Dock::Left,crate::model::IslandShape::Notch,crate::model::Skin::Classic),(crate::model::Dock::Right,crate::model::IslandShape::Pill,crate::model::Skin::Cream)] {
         let tag=format!("{}-{}",dock.key(),shape.key());
@@ -6951,7 +6951,7 @@ fn workbuddy_and_deepseek_balances_stay_ordered_and_clickable(){
 fn workbuddy_balance_gallery(){
     use crate::quota::{Provider,Event};
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_DEEPSEEK_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for skin in [crate::model::Skin::Classic,crate::model::Skin::Cream,crate::model::Skin::GlassLight,crate::model::Skin::GlassDark]{
     for (name,amount,stale,count) in [("workbuddy","4.18",false,3)] {for open in [false,true]{
         let mut h=H::new();h.app.settings.pet=false;h.app.settings.skin=skin;h.app.settings.show_battery=true;h.quota_accounts(count);
@@ -7001,14 +7001,14 @@ fn notification_preview_masks_fullwidth_and_zero_width_codes(){
 }
 
 /// 内存实测：模拟长时间听歌（不断出现新汉字）并浏览各页面，输出进程内存、字形图集和贴图占用。
-/// 运行：DAOZAI_ATLAS=4096 DAOZAI_PPP=1.5 cargo test --lib memory_profile -- --ignored --nocapture --test-threads=1
+/// 运行：YE_DAOZAI_ATLAS=4096 YE_DAOZAI_PPP=1.5 cargo test --lib memory_profile -- --ignored --nocapture --test-threads=1
 #[test]
 #[ignore="内存实测，按需运行"]
 fn memory_profile_long_listening_session(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let side:usize=std::env::var("DAOZAI_ATLAS").ok().and_then(|s|s.parse().ok()).unwrap_or(4096);
-    let ppp:f32=std::env::var("DAOZAI_PPP").ok().and_then(|s|s.parse().ok()).unwrap_or(1.5);
-    let songs:usize=std::env::var("DAOZAI_SONGS").ok().and_then(|s|s.parse().ok()).unwrap_or(120);
+    let side:usize=std::env::var("YE_DAOZAI_ATLAS").ok().and_then(|s|s.parse().ok()).unwrap_or(4096);
+    let ppp:f32=std::env::var("YE_DAOZAI_PPP").ok().and_then(|s|s.parse().ok()).unwrap_or(1.5);
+    let songs:usize=std::env::var("YE_DAOZAI_SONGS").ok().and_then(|s|s.parse().ok()).unwrap_or(120);
     // 匿名内存≈Windows 的私有内存；文件映射（程序代码、系统字体）可在进程间共享，不计入私有内存。
     fn rss()->String{
         let status=std::fs::read_to_string("/proc/self/status").unwrap_or_default();
@@ -7056,13 +7056,13 @@ fn memory_profile_long_listening_session(){
 }
 
 #[test]
-#[ignore = "按需导出设置页预览：DAOZAI_SETTINGS_PREVIEW_DIR=目录 cargo test settings_gallery -- --ignored"]
+#[ignore = "按需导出设置页预览：YE_DAOZAI_SETTINGS_PREVIEW_DIR=目录 cargo test settings_gallery -- --ignored"]
 fn settings_gallery(){
     use crate::settings_theme::SettingsTheme;
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_SETTINGS_PREVIEW_DIR").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_SETTINGS_PREVIEW_DIR").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
-    let width:f32=std::env::var("DAOZAI_SETTINGS_WIDTH").ok().and_then(|v|v.parse().ok()).unwrap_or(690.0);
+    let width:f32=std::env::var("YE_DAOZAI_SETTINGS_WIDTH").ok().and_then(|v|v.parse().ok()).unwrap_or(690.0);
     let (w,hgt)=(width,2400.0f32);
     let scale=1.5f32;
     for (mode,dark) in [(SettingsTheme::Dark,true),(SettingsTheme::Light,false)] {
@@ -7105,7 +7105,7 @@ fn settings_gallery(){
 #[ignore="按需导出消息提醒与账号状态提示的实际样式"]
 fn messenger_notice_status_gallery(){
     let _guard=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_MESSENGER_PREVIEW").expect("需指定预览目录"));
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_MESSENGER_PREVIEW").expect("需指定预览目录"));
     std::fs::create_dir_all(&dest).unwrap();
     for case in 0..15{
         let mut h=H::new();h.app.settings.pet=true;h.app.settings.wechat_notifications=true;
@@ -7506,7 +7506,7 @@ fn shoot_unread(h:&mut H,raster:&mut crate::preview_raster::Raster,dest:&std::pa
 fn unread_gallery(){
     use crate::app::Messenger;
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_FEATURE_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_FEATURE_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let fill=|h:&mut H,n:usize|{
         h.app.settings.wechat_notifications=true;h.app.settings.read_notifications=true;h.app.settings.pet=false;
         let all=[(Messenger::Wechat,101),(Messenger::Qq,0),(Messenger::Wechat,202),(Messenger::Wechat,303),(Messenger::Qq,0)];
@@ -7598,7 +7598,7 @@ fn calendar_add_button_does_not_overlap_the_battery_ring(){
         raster.update_textures(&output.textures_delta);shapes=output.shapes;
         raster.free_textures(&output.textures_delta);
     }
-    if let Some(path)=std::env::var_os("DAOZAI_CALENDAR_HEADER_PREVIEW").filter(|_|index==0) {
+    if let Some(path)=std::env::var_os("YE_DAOZAI_CALENDAR_HEADER_PREVIEW").filter(|_|index==0) {
         raster.buf.fill([0.15,0.15,0.15,1.0]);raster.draw(&h.ctx.tessellate(shapes.clone(),2.0),2.0);
         let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);
         let image=image::RgbaImage::from_raw((crate::app::CANVAS_W*2.0) as u32,(WIN_H*2.0) as u32,rgba).unwrap();
@@ -7812,7 +7812,7 @@ fn claude_local_only_settings_show_notice_without_manual_reset_controls(){
         raster.update_textures(&output.textures_delta);h.shapes=output.shapes;
     }
     fn capture(h:&H,raster:&mut crate::preview_raster::Raster,name:&str){
-        if let Some(dir)=std::env::var_os("DAOZAI_CLAUDE_SETTINGS_PREVIEW"){
+        if let Some(dir)=std::env::var_os("YE_DAOZAI_CLAUDE_SETTINGS_PREVIEW"){
             let dir=std::path::PathBuf::from(dir);std::fs::create_dir_all(&dir).unwrap();
             raster.buf.fill([0.0,0.0,0.0,1.0]);raster.draw(&h.ctx.tessellate(h.shapes.clone(),1.0),1.0);let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);
             image::save_buffer(dir.join(format!("{name}.png")),&rgba,640,760,image::ColorType::Rgba8).unwrap();
@@ -7861,7 +7861,7 @@ fn weather_page_shows_the_local_snapshot_and_forecast(){
         assert!(h.shapes.iter().any(|s|matches!(&s.shape,egui::Shape::Text(t)if t.galley.text().contains(phrase))),"天气页缺少：{phrase}");
     }
     for s in &h.shapes{if let egui::Shape::Text(t)=&s.shape{assert!(s.clip_rect.contains_rect(t.visual_bounding_rect()),"天气页文字被裁切：{}",t.galley.text());}}
-    if let Some(dest)=std::env::var_os("DAOZAI_WEATHER_PREVIEW_DIR"){
+    if let Some(dest)=std::env::var_os("YE_DAOZAI_WEATHER_PREVIEW_DIR"){
         let dest=std::path::PathBuf::from(dest);std::fs::create_dir_all(&dest).unwrap();
         let mut raster=feature_raster();shoot_feature(&mut h,&mut raster,&dest,"weather",30,Some(H::local(300.0,60.0)),"2026-11-09");
     }
@@ -7914,7 +7914,7 @@ fn weather_chip_hides_without_data_or_when_the_page_is_hidden(){
 #[ignore="按需导出常驻天气徽标预览"]
 fn weather_resident_bar_preview(){
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let mut h=H::new();h.app.settings.pet=false;
     h.app.weather.snapshot=Some(crate::weather::Snapshot{place:"杭州".into(),position:None,auto:false,temp:9.0,feels:Some(5.6),humidity:Some(58),wind:Some(13.9),code:51,day:true,high:Some(15.2),low:Some(6.8),sunrise:Some("06:52".into()),sunset:Some("17:21".into()),sun_times:None,days:vec![],at:chrono::Utc::now().timestamp()});
     let mut raster=crate::preview_raster::Raster::new(1280,380);
@@ -7966,7 +7966,7 @@ fn weather_icons_stay_bright_on_light_skins(){
 fn weather_icon_atlas_preview(){
     use crate::{paint::{Card,H as Align},theme::{self,W},weather::{self,Snapshot}};
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_WEATHER_PREVIEW_DIR").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     let cases=[("晴 · 白天",0,true,"0"),("晴 · 夜间",0,false,"0"),("晴间多云 · 白天",2,true,"1 / 2"),
         ("晴间多云 · 夜间",2,false,"1 / 2"),("阴天",3,true,"3"),("雾 / 雾凇",45,true,"45 / 48"),
         ("细雨 / 冻毛毛雨",51,true,"51 / 53 / 55 / 56 / 57"),("雨 / 冻雨",63,true,"61 / 63 / 65 / 66 / 67"),("阵雨",80,true,"80 / 81 / 82"),
@@ -8013,7 +8013,7 @@ fn weather_icon_atlas_preview(){
 fn weather_settings_preview(){
     use crate::settings_theme::SettingsTheme;
     let _g=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_WEATHER_SETTINGS_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_WEATHER_SETTINGS_PREVIEW").expect("需指定预览目录"));std::fs::create_dir_all(&dest).unwrap();
     for (tag,theme,dropdown) in [("dark",SettingsTheme::Dark,false),("light",SettingsTheme::Light,false),("dropdown-dark",SettingsTheme::Dark,true),("dropdown-light",SettingsTheme::Light,true)] {
         let mut h=H::new();h.app.settings.weather_city="杭州".into();h.app.weather.city_input="杭州".into();h.app.weather.manual_city=true;h.app.settings.settings_theme=theme;
         h.ctx.style_mut(|style|style.animation_time=0.0);
@@ -8204,7 +8204,7 @@ fn quota_relay_manual_types_require_advanced_settings_and_preserve_the_site(){
         let first=draw(&mut h,vec![]);raster.update_textures(&first.textures_delta);
         let second=draw(&mut h,vec![]);raster.update_textures(&second.textures_delta);
         let output=draw(&mut h,vec![]);raster.update_textures(&output.textures_delta);
-        if let Some(dest)=std::env::var_os("DAOZAI_RELAY_PREVIEW"){
+        if let Some(dest)=std::env::var_os("YE_DAOZAI_RELAY_PREVIEW"){
             let jobs=h.ctx.tessellate(output.shapes.clone(),output.pixels_per_point);raster.draw(&jobs,output.pixels_per_point);let mut rgba=Vec::new();raster.to_rgba8(&mut rgba);
             let path=std::path::PathBuf::from(dest);std::fs::create_dir_all(&path).unwrap();image::save_buffer(path.join(if dark{"connect-auto-dark.png"}else{"connect-auto-light.png"}),&rgba,780,850,image::ColorType::Rgba8).unwrap();
         }
@@ -8256,7 +8256,7 @@ fn quota_acceptance_gallery() {
     use crate::quota::{Provider,Snapshot,Account,plans,relay};
     use serde_json::json;
     let _guard=ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-    let dest=std::path::PathBuf::from(std::env::var_os("DAOZAI_QUOTA_PREVIEW").unwrap());std::fs::create_dir_all(&dest).unwrap();
+    let dest=std::path::PathBuf::from(std::env::var_os("YE_DAOZAI_QUOTA_PREVIEW").unwrap());std::fs::create_dir_all(&dest).unwrap();
     let providers=[Provider::OpenCodeGo,Provider::MiniMax,Provider::Glm,Provider::NewApi,Provider::OneApi,Provider::Sub2Api];
     let snapshots:Vec<Snapshot>=vec![
         plans::parse(plans::PlanProvider::OpenCodeGo,&json!({"usage":{"rolling":{"percent":25,"resetsAt":"2030-01-01T00:00:00Z"},"weekly":{"percent":50,"resetsAt":"2030-01-03T00:00:00Z"},"monthly":{"percent":100,"resetsAt":"2030-02-01T00:00:00Z"}}})).unwrap(),

@@ -79,7 +79,7 @@ fn doubao_settings_viewport_close_cancels_pending_validation() {
 
 #[test]
 fn doubao_quota_gallery() {
-    let Some(dest)=std::env::var_os("DAOZAI_DOUBAO_PREVIEW_DIR").map(std::path::PathBuf::from) else{return;};
+    let Some(dest)=std::env::var_os("YE_DAOZAI_DOUBAO_PREVIEW_DIR").map(std::path::PathBuf::from) else{return;};
     let _guard=ENV_LOCK.lock().unwrap_or_else(|error|error.into_inner());std::fs::create_dir_all(&dest).unwrap();
     for light in [false,true] {
         let name=if light{"light"}else{"dark"};

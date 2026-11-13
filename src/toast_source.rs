@@ -32,7 +32,7 @@ mod tests {
     use super::*;
     #[test]
     fn sender_lookup_matches_creation_time_and_never_modifies_the_database(){
-        let path=std::env::temp_dir().join(format!("daozai-toast-source-{}.db",std::process::id()));
+        let path=std::env::temp_dir().join(format!("ye-daozai-toast-source-{}.db",std::process::id()));
         let name=CString::new(path.to_string_lossy().as_bytes()).unwrap();let mut db=ptr::null_mut();
         let sql=CString::new("CREATE TABLE NotificationHandler (RecordId INTEGER, PrimaryId TEXT); CREATE TABLE Notification (Id INTEGER, ArrivalTime INTEGER, HandlerId INTEGER, Type TEXT); INSERT INTO NotificationHandler VALUES (1,'QQ'),(2,'OtherApp'); INSERT INTO Notification VALUES (10,100,1,'toast'),(11,101,2,'toast'),(12,102,1,'badge');").unwrap();
         unsafe{
@@ -49,7 +49,7 @@ mod tests {
     #[test]
     #[ignore="需要本机通知中心留有指定测试通知"]
     fn qq_notification_local_identity(){
-        let id=std::env::var("DAOZAI_QQ_TEST_ID").unwrap().parse().unwrap();
+        let id=std::env::var("YE_DAOZAI_QQ_TEST_ID").unwrap().parse().unwrap();
         use windows::UI::Notifications::{Management::UserNotificationListener,NotificationKinds};
         use windows::Win32::System::WinRT::{RoInitialize,RoUninitialize,RO_INIT_MULTITHREADED};
         unsafe{RoInitialize(RO_INIT_MULTITHREADED).unwrap();}

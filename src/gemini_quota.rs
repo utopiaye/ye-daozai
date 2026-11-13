@@ -57,7 +57,7 @@ fn redirect_target(current:&str,location:&str)->Option<String>{
 fn request(agent:&ureq::Agent,url:&str,session:&Session)->Result<Snapshot,(String,u64)>{
     let mut current=url.to_owned();
     for _ in 0..3{
-    let response=agent.get(&current).set("Cookie",&session.cookie).set("Accept","application/json").set("Referer","https://gemini.google.com/usage").set("User-Agent","Mozilla/5.0 Daozai").call().map_err(|e|match e{
+    let response=agent.get(&current).set("Cookie",&session.cookie).set("Accept","application/json").set("Referer","https://gemini.google.com/usage").set("User-Agent","Mozilla/5.0 YeDaozai").call().map_err(|e|match e{
         ureq::Error::Status(401|403,_)=>(LOGIN_ERROR.into(),0),
         ureq::Error::Status(429,r)=>("Gemini 请求过于频繁，稍后自动重试".into(),r.header("Retry-After").and_then(|s|s.parse().ok()).unwrap_or(180).clamp(30,3600)),
         ureq::Error::Status(n,_)=>(format!("Gemini 额度服务暂不可用（{n}）"),60),
@@ -164,7 +164,7 @@ mod tests {
     #[ignore="使用指定隔离目录验证捕获会话，写入隔离账号配置"]
     fn gemini_captured_session_independent_refresh(){
         let _g=crate::ui_tests::ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-        assert!(std::env::var_os("DAOZAI_DATA_DIR").is_some(),"真实验证必须指定隔离测试目录");
+        assert!(std::env::var_os("YE_DAOZAI_DATA_DIR").is_some(),"真实验证必须指定隔离测试目录");
         let slot=fs::read_to_string(crate::model::config_dir().join("verified-slot.txt")).unwrap();
         let mut config=super::super::Config::default();let id=config.connect_gemini(slot,"Gemini 真实验证".into());
         let account=config.accounts.iter().find(|a|a.id==id).unwrap();let snapshot=fetch(&super::super::http_agent(),account).unwrap();
@@ -175,7 +175,7 @@ mod tests {
     #[ignore="需要本人允许 Chrome 原生连接，仅更新指定隔离目录中的会话"]
     fn gemini_native_chrome_live_connection(){
         let _g=crate::ui_tests::ENV_LOCK.lock().unwrap_or_else(|e|e.into_inner());
-        assert!(std::env::var_os("DAOZAI_DATA_DIR").is_some(),"真实验证必须指定隔离测试目录");
+        assert!(std::env::var_os("YE_DAOZAI_DATA_DIR").is_some(),"真实验证必须指定隔离测试目录");
         let config=super::super::Config::load();let account=config.accounts.iter().find(|a|a.provider==super::super::Provider::Gemini).unwrap();
         let connect=Connect::start(account.alias.clone(),address(account).unwrap(),None,account.slot.clone());
         let deadline=std::time::Instant::now()+std::time::Duration::from_secs(315);

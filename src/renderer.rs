@@ -52,15 +52,15 @@ mod tests {
         for module in ["igxelpicd64.dll", r"C:\Windows\System32\DriverStore\FileRepository\iigd.inf\ig9icd64.dll", "ig75icd64.dll", "nvoglv64.dll", "atioglxx.dll", "OPENGL32.dll"] {
             assert!(is_gl_driver(module), "{module}");
         }
-        for module in ["daozai.exe", "ntdll.dll", "KERNELBASE.dll", "d3d12.dll", "igdumdim64.dll", "nvwgf2umx.dll", "amdxc64.dll", "igvk64.dll", "vulkan-1.dll", "ucrtbase.dll"] {
+        for module in ["ye-daozai.exe", "ntdll.dll", "KERNELBASE.dll", "d3d12.dll", "igdumdim64.dll", "nvwgf2umx.dll", "amdxc64.dll", "igvk64.dll", "vulkan-1.dll", "ucrtbase.dll"] {
             assert!(!is_gl_driver(module), "{module}");
         }
     }
     #[test]
     fn fallback_marker_turns_on_compat_rendering_once() {
         let _g = crate::ui_tests::ENV_LOCK.lock().unwrap_or_else(|e| e.into_inner());
-        let dir = std::env::temp_dir().join(format!("daozai-renderer-{}", std::process::id()));
-        std::env::set_var("DAOZAI_DATA_DIR", &dir);
+        let dir = std::env::temp_dir().join(format!("ye-daozai-renderer-{}", std::process::id()));
+        std::env::set_var("YE_DAOZAI_DATA_DIR", &dir);
         assert!(apply_pending_fallback().is_none(), "没有标记时不改动设置");
         request_fallback("igxelpicd64.dll");
         let reason = apply_pending_fallback().expect("有标记时打开兼容渲染");
@@ -68,7 +68,7 @@ mod tests {
         let settings = crate::model::Settings::load();
         assert!(settings.render_compat && settings.render_compat_reason == reason);
         assert!(apply_pending_fallback().is_none() && !marker().exists(), "标记只生效一次");
-        std::env::remove_var("DAOZAI_DATA_DIR");
+        std::env::remove_var("YE_DAOZAI_DATA_DIR");
         let _ = std::fs::remove_dir_all(dir);
     }
 }

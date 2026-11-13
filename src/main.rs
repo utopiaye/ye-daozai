@@ -1,12 +1,12 @@
 #![cfg_attr(windows, windows_subsystem = "windows")]
-//! Windows 外壳：无边框透明窗口 + 托盘 + 系统数据，界面全部交给 `daozai::app::App`。
+//! Windows 外壳：无边框透明窗口 + 托盘 + 系统数据，界面全部交给 `ye_daozai::app::App`。
 
 use eframe::egui::{self, Color32, Pos2};
-use daozai::app::{self, App, Cmd, Env, Options};
-use daozai::smtc;
+use ye_daozai::app::{self, App, Cmd, Env, Options};
+use ye_daozai::smtc;
 #[cfg(windows)]
-use daozai::messenger::{self,OpenError,TaskbarEvent};
-use daozai::poll_clock::PollClock;
+use ye_daozai::messenger::{self,OpenError,TaskbarEvent};
+use ye_daozai::poll_clock::PollClock;
 use std::time::{Duration, Instant};
 
 mod diagnostics;
@@ -21,7 +21,7 @@ struct Shell {
     seek_rx: Option<(&'static str,std::sync::mpsc::Receiver<bool>)>,
     media_control:Option<smtc::ControlWorker>,
     music_volume_rx:Option<(String,std::sync::mpsc::Receiver<bool>)>,
-    _resource_monitor:Option<daozai::resources::Monitor>,
+    _resource_monitor:Option<ye_daozai::resources::Monitor>,
     resource_at:PollClock,
     guard_notified:bool,
     media_enabled: smtc::Poller,
@@ -31,21 +31,21 @@ struct Shell {
     placement_at: PollClock,
     placement_scale: f32,
     /// 上次定位时的目标屏幕与水平位置；变化后立即重新定位，不等下一次轮询。
-    placement_key: (String, i32, daozai::model::Dock, bool),
+    placement_key: (String, i32, ye_daozai::model::Dock, bool),
     win_x: f32,
     sys: (Option<u8>, bool, PollClock),
     #[cfg(windows)]
-    system_state: daozai::system::Snapshot,
+    system_state: ye_daozai::system::Snapshot,
     #[cfg(windows)]
     system_ready: bool,
     #[cfg(windows)]
-    system_rx: std::sync::mpsc::Receiver<daozai::system::Observation>,
-    fullscreen: Option<daozai::display_layout::Bounds>,
-    input_state:daozai::input::Monitor,
+    system_rx: std::sync::mpsc::Receiver<ye_daozai::system::Observation>,
+    fullscreen: Option<ye_daozai::display_layout::Bounds>,
+    input_state:ye_daozai::input::Monitor,
     #[cfg(windows)]
-    input_keys:Option<daozai::input::Shortcuts>,
+    input_keys:Option<ye_daozai::input::Shortcuts>,
     #[cfg(windows)]
-    incoming: Option<daozai::system::Notifications>,
+    incoming: Option<ye_daozai::system::Notifications>,
     #[cfg(windows)]
     messengers:messenger::Runtime,
     #[cfg(windows)]
@@ -59,31 +59,31 @@ struct Shell {
     hidden: bool,
     /// 毛玻璃皮肤的背景亮度采样（仅毛玻璃皮肤运行）。
     #[cfg(windows)]
-    backdrop: Option<daozai::backdrop::Sampler>,
+    backdrop: Option<ye_daozai::backdrop::Sampler>,
     #[cfg(windows)]
-    native: Option<daozai::native::Window>,
+    native: Option<ye_daozai::native::Window>,
     #[cfg(windows)]
-    tray: Option<daozai::tray::Tray>,
+    tray: Option<ye_daozai::tray::Tray>,
     #[cfg(windows)]
     autostart: bool,
     /// v0.5.4：蓝牙音频设备（后台线程推送）与音量回声的静默窗口。
     #[cfg(windows)]
-    bt_rx: Option<daozai::bt::Service>,
-    bt: Vec<daozai::bt::Device>,
+    bt_rx: Option<ye_daozai::bt::Service>,
+    bt: Vec<ye_daozai::bt::Device>,
     bt_ready: bool,
     volume_quiet: PollClock,
     /// v0.5.5：邮件收信服务（工作线程），以及上次同步给它的账号/开关快照。
     /// 邮箱模块开启时才存在；关闭后收信与整理线程随之退出。
-    mail: Option<daozai::mail::Service>,
-    mail_sig: Option<(bool, u32, Vec<daozai::mail::Account>)>,
+    mail: Option<ye_daozai::mail::Service>,
+    mail_sig: Option<(bool, u32, Vec<ye_daozai::mail::Account>)>,
     /// v0.5.6：日程（CalDAV）服务与上次下发的配置。
     /// 日程模块开启时才存在。
-    cal: Option<daozai::calendar::Service>,
-    cal_sig: Option<(Vec<daozai::calendar::Config>, bool)>,
+    cal: Option<ye_daozai::calendar::Service>,
+    cal_sig: Option<(Vec<ye_daozai::calendar::Config>, bool)>,
     /// 置物架模块开启且记录剪贴板时才监听系统剪贴板。
-    clipboard_watch: Option<daozai::clipboard::Watcher>,
-    quota: daozai::quota::Service,
-    quota_sig: Option<(bool,Vec<daozai::quota::Account>)>,
+    clipboard_watch: Option<ye_daozai::clipboard::Watcher>,
+    quota: ye_daozai::quota::Service,
+    quota_sig: Option<(bool,Vec<ye_daozai::quota::Account>)>,
     quota_at: PollClock,
 }
 
@@ -93,12 +93,12 @@ impl Shell {
     /// 按模块开关启停后台服务：关闭的模块不保留任何线程，重新开启时从头对齐配置。
     fn reconcile_modules(&mut self,ctx:&egui::Context){
         let mail_on=self.app.module_on(app::MAIL_PAGE);
-        if mail_on!=self.mail.is_some() {self.mail=mail_on.then(daozai::mail::Service::start);self.mail_sig=None;}
+        if mail_on!=self.mail.is_some() {self.mail=mail_on.then(ye_daozai::mail::Service::start);self.mail_sig=None;}
         let cal_on=self.app.module_on(app::CALENDAR_PAGE);
-        if cal_on!=self.cal.is_some() {self.cal=cal_on.then(daozai::calendar::Service::start);self.cal_sig=None;}
+        if cal_on!=self.cal.is_some() {self.cal=cal_on.then(ye_daozai::calendar::Service::start);self.cal_sig=None;}
         let clipboard_on=self.app.clipboard_active();
         if clipboard_on!=self.clipboard_watch.is_some() {
-            self.clipboard_watch=if clipboard_on {let ctx=ctx.clone();daozai::clipboard::watch(self.app.clipboard.clone(),move||ctx.request_repaint())}else{None};
+            self.clipboard_watch=if clipboard_on {let ctx=ctx.clone();ye_daozai::clipboard::watch(self.app.clipboard.clone(),move||ctx.request_repaint())}else{None};
         }
     }
 
@@ -121,7 +121,7 @@ impl Shell {
         diagnostics::startup("加载本地配置");
         let mut app = App::new(&cc.egui_ctx, Options::default());
         app.render_compat_running=running_compat;
-        #[cfg(feature="record")] let quota_demo=std::env::var("DAOZAI_QUOTA_DEMO").is_ok();
+        #[cfg(feature="record")] let quota_demo=std::env::var("YE_DAOZAI_QUOTA_DEMO").is_ok();
         #[cfg(not(feature="record"))] let quota_demo=false;
         diagnostics::startup("初始化额度配置");
         if !quota_demo{app.quota_initialize();}
@@ -129,31 +129,31 @@ impl Shell {
         if std::env::args().any(|arg|arg=="--settings"){app.open_settings();}
         if std::env::args().any(|arg|arg=="--calendar"){app.open_calendar(None);}
         #[cfg(feature="record")]
-        if std::env::var("DAOZAI_MAIL_DEMO").is_ok(){app.mail_demo();}
+        if std::env::var("YE_DAOZAI_MAIL_DEMO").is_ok(){app.mail_demo();}
         #[cfg(feature="record")]
-        if std::env::var("DAOZAI_CAL_DEMO").is_ok(){app.calendar_demo();}
+        if std::env::var("YE_DAOZAI_CAL_DEMO").is_ok(){app.calendar_demo();}
         #[cfg(feature="record")]
-        if let Ok(mode)=std::env::var("DAOZAI_QUOTA_DEMO"){app.quota_demo(&mode);}
+        if let Ok(mode)=std::env::var("YE_DAOZAI_QUOTA_DEMO"){app.quota_demo(&mode);}
         diagnostics::startup("初始化媒体和托盘");
         let media = smtc::shared();
         let media_enabled=smtc::spawn_poller(media.clone(),cc.egui_ctx.clone());
         media_enabled.store(app.settings.visible_pages[0],std::sync::atomic::Ordering::Relaxed);
         #[cfg(windows)]
-        let autostart = daozai::tray::autostart_enabled();
+        let autostart = ye_daozai::tray::autostart_enabled();
         #[cfg(windows)]
-        let tray = app.start_tray(daozai::tray::State {
+        let tray = app.start_tray(ye_daozai::tray::State {
             pet: app.settings.pet,
             minimal: app.settings.minimal,
             autostart,
         });
         diagnostics::startup("初始化通知监听");
         #[cfg(windows)]
-        let incoming=if app.settings.read_notifications {match daozai::system::connect_with_settings(cc.egui_ctx.clone(),&app.settings){Ok(rx)=>Some(rx),Err(e)=>{app.listener_status=format!("Windows 无法读取通知：{}",e.code());None}}}else{None};
+        let incoming=if app.settings.read_notifications {match ye_daozai::system::connect_with_settings(cc.egui_ctx.clone(),&app.settings){Ok(rx)=>Some(rx),Err(e)=>{app.listener_status=format!("Windows 无法读取通知：{}",e.code());None}}}else{None};
         // 音频、网络与输入法查询由后台完成，避免首帧等待系统服务。
         diagnostics::startup("创建后台采样与窗口");
         let initial_input=None;
-        #[cfg(windows)] let system_state=daozai::system::Snapshot::default();
-        #[cfg(windows)] let system_rx=daozai::system::observe(cc.egui_ctx.clone(),system_state.clone(),initial_input);
+        #[cfg(windows)] let system_state=ye_daozai::system::Snapshot::default();
+        #[cfg(windows)] let system_rx=ye_daozai::system::observe(cc.egui_ctx.clone(),system_state.clone(),initial_input);
         // 岛体大小只作用于主窗口，在首帧之前生效，避免启动时先按 100% 闪一下。
         #[cfg(windows)] eframe::set_root_viewport_scale(app.settings.island_scale());
         Self {
@@ -165,7 +165,7 @@ impl Shell {
             seek_rx: None,
             media_control:None,
             music_volume_rx:None,
-            _resource_monitor:daozai::resources::Monitor::start(daozai::model::config_dir().join("diagnostics")),
+            _resource_monitor:ye_daozai::resources::Monitor::start(ye_daozai::model::config_dir().join("diagnostics")),
             resource_at:PollClock::default(),
             guard_notified:false,
             media_enabled,
@@ -173,7 +173,7 @@ impl Shell {
             placed: false,
             placement_at: PollClock::default(),
             placement_scale: 0.0,
-            placement_key: (String::new(), 0, daozai::model::Dock::Top, true),
+            placement_key: (String::new(), 0, ye_daozai::model::Dock::Top, true),
             win_x: 0.0,
             sys: (None, false, PollClock::default()),
             #[cfg(windows)]
@@ -181,8 +181,8 @@ impl Shell {
             #[cfg(windows)] system_ready:false,
             #[cfg(windows)] system_rx,
             fullscreen:None,
-            input_state:daozai::input::Monitor::new(initial_input),
-            #[cfg(windows)] input_keys:daozai::input::Shortcuts::start(),
+            input_state:ye_daozai::input::Monitor::new(initial_input),
+            #[cfg(windows)] input_keys:ye_daozai::input::Shortcuts::start(),
             #[cfg(windows)] incoming,
             #[cfg(windows)] messengers:Default::default(),
             #[cfg(windows)] unread_at:PollClock::default(),
@@ -191,7 +191,7 @@ impl Shell {
             #[cfg(windows)] hidden:false,
             #[cfg(windows)] backdrop:None,
             #[cfg(windows)]
-            native: daozai::native::Window::new(cc),
+            native: ye_daozai::native::Window::new(cc),
             #[cfg(windows)]
             tray,
             #[cfg(windows)]
@@ -206,13 +206,13 @@ impl Shell {
             cal: None,
             cal_sig: None,
             clipboard_watch: None,
-            quota: daozai::quota::Service::start(), quota_sig: None, quota_at: PollClock::default(),
+            quota: ye_daozai::quota::Service::start(), quota_sig: None, quota_at: PollClock::default(),
         }
     }
 
     #[cfg(windows)]
     fn poll_tray(&mut self) {
-        use daozai::tray::{self, Event};
+        use ye_daozai::tray::{self, Event};
         let events = self.tray.as_ref().map(|t| t.poll()).unwrap_or_default();
         for e in events {
             match e {
@@ -267,9 +267,9 @@ impl Shell {
         let cursor = cursor_logical(ppp).map(|(x, y)| Pos2::new(x - origin.x, y - origin.y));
         // 所在屏幕换算到窗口逻辑坐标，供通知详情等浮层避开屏幕边缘。
         #[cfg(windows)]
-        let screen=daozai::display_layout::selected(&self.app.displays,&self.app.settings.display_id).map(|d|{
+        let screen=ye_daozai::display_layout::selected(&self.app.displays,&self.app.settings.display_id).map(|d|{
             // 与岛体摆放用同一范围：避开顶栏后，拖动换边和浮层都以顶栏下沿为顶边。
-            let b=daozai::display_layout::placement_bounds(d,self.app.settings.avoid_top_bar);
+            let b=ye_daozai::display_layout::placement_bounds(d,self.app.settings.avoid_top_bar);
             egui::Rect::from_min_max(Pos2::new(b.left as f32/ppp-origin.x,b.top as f32/ppp-origin.y),Pos2::new(b.right as f32/ppp-origin.x,b.bottom as f32/ppp-origin.y))
         });
         #[cfg(not(windows))]
@@ -288,11 +288,11 @@ impl Shell {
             network: Some(self.system_state.network),
             cursor,
             idle_seconds: {
-                #[cfg(windows)] {Some(daozai::system::idle_seconds())}
+                #[cfg(windows)] {Some(ye_daozai::system::idle_seconds())}
                 #[cfg(not(windows))] {None}
             },
             screen_locked: {
-                #[cfg(windows)] {daozai::system::screen_locked()}
+                #[cfg(windows)] {ye_daozai::system::screen_locked()}
                 #[cfg(not(windows))] {false}
             },
             browser_at_top: {
@@ -326,16 +326,16 @@ impl eframe::App for Shell {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if self.resource_at.ready(Duration::from_secs(30)){
             let (count,bytes)={let textures=ctx.tex_manager();let textures=textures.read();(textures.num_allocated(),textures.allocated().map(|(_,info)|info.bytes_used()).sum())};
-            daozai::resources::TEXTURES.store(count,std::sync::atomic::Ordering::Relaxed);
-            daozai::resources::TEXTURE_BYTES.store(bytes,std::sync::atomic::Ordering::Relaxed);
-            daozai::resources::GALLEYS.store(ctx.fonts(|fonts|fonts.num_galleys_in_cache()),std::sync::atomic::Ordering::Relaxed);
+            ye_daozai::resources::TEXTURES.store(count,std::sync::atomic::Ordering::Relaxed);
+            ye_daozai::resources::TEXTURE_BYTES.store(bytes,std::sync::atomic::Ordering::Relaxed);
+            ye_daozai::resources::GALLEYS.store(ctx.fonts(|fonts|fonts.num_galleys_in_cache()),std::sync::atomic::Ordering::Relaxed);
             self.resource_at=PollClock::now();
         }
-        let guarded=daozai::resources::GUARD.tripped();
+        let guarded=ye_daozai::resources::GUARD.tripped();
         if guarded && !self.guard_notified {
             // 资源保护熔断：停止音乐会话轮询（含封面、网易云日志）与歌词查询，保住用户电脑，重启后恢复。
             self.guard_notified=true;self.app.opts.fetch_lyrics=false;
-            self.app.alert("岛仔已暂停音乐功能","检测到资源占用异常，已暂停读取音乐信息和歌词。重启岛仔即可恢复；诊断记录在数据目录的 diagnostics 文件夹。",0,false);
+            self.app.alert("椰岛仔已暂停音乐功能","检测到资源占用异常，已暂停读取音乐信息和歌词。重启椰岛仔即可恢复；诊断记录在数据目录的 diagnostics 文件夹。",0,false);
         }
         self.media_enabled.store(self.app.settings.visible_pages[0] && !guarded,std::sync::atomic::Ordering::Relaxed);
         if self.media_fast_until.is_some_and(|until|Instant::now()>=until){self.media_fast_until=None;}
@@ -352,7 +352,7 @@ impl eframe::App for Shell {
         #[cfg(windows)]
         self.poll_tray();
         #[cfg(windows)]
-        let foreground_changed=daozai::native::take_foreground_change();
+        let foreground_changed=ye_daozai::native::take_foreground_change();
         #[cfg(windows)]
         if foreground_changed {
             // 切到别的程序：收起，并在光标离开前不再自动展开
@@ -370,12 +370,12 @@ impl eframe::App for Shell {
                 && (&self.placement_key.0,self.placement_key.2,self.placement_key.3)==(&placement_key.0,placement_key.2,placement_key.3);
             if !offset_only {
                 self.placement_at=PollClock::now();
-                self.app.displays=daozai::display_layout::connected();
+                self.app.displays=ye_daozai::display_layout::connected();
             }
             self.placement_scale=ctx.pixels_per_point();
             self.placement_key=placement_key;
-            let display=daozai::display_layout::selected(&self.app.displays,&self.app.settings.display_id);
-            if display.is_some_and(|d|self.native.as_ref().is_some_and(|w|w.place_on_display(self.placement_scale,daozai::display_layout::placement_bounds(d,self.app.settings.avoid_top_bar),offset,self.app.settings.dock))) {
+            let display=ye_daozai::display_layout::selected(&self.app.displays,&self.app.settings.display_id);
+            if display.is_some_and(|d|self.native.as_ref().is_some_and(|w|w.place_on_display(self.placement_scale,ye_daozai::display_layout::placement_bounds(d,self.app.settings.avoid_top_bar),offset,self.app.settings.dock))) {
                 if !self.placed {diagnostics::startup("目标屏幕物理坐标定位完成，已请求显示");}
                 self.placed=true;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Visible(true));
@@ -415,10 +415,10 @@ impl eframe::App for Shell {
                 self.system_ready=true;
                 self.fullscreen=observation.fullscreen;
             }
-            self.hidden=daozai::display_layout::hide_for_fullscreen(self.app.settings.hide_fullscreen,self.fullscreen,daozai::display_layout::selected(&self.app.displays,&self.app.settings.display_id).map(|d|d.bounds));
+            self.hidden=ye_daozai::display_layout::hide_for_fullscreen(self.app.settings.hide_fullscreen,self.fullscreen,ye_daozai::display_layout::selected(&self.app.displays,&self.app.settings.display_id).map(|d|d.bounds));
             // 毛玻璃：在岛体左右两侧和画布底边（都在窗口区域之外）取样，估计岛背后的明暗。
             if self.app.settings.skin.is_glass() && !self.hidden {
-                let sampler=self.backdrop.get_or_insert_with(daozai::backdrop::Sampler::start);
+                let sampler=self.backdrop.get_or_insert_with(ye_daozai::backdrop::Sampler::start);
                 let ppp=ctx.pixels_per_point();
                 if let Some(origin)=self.native.as_ref().and_then(|w|w.logical_origin(ppp)) {
                     let points=self.app.backdrop_points();
@@ -428,7 +428,7 @@ impl eframe::App for Shell {
                 self.backdrop=None;
             }
             if self.app.settings.bluetooth_notifications {
-                if self.bt_rx.is_none() {self.bt_rx=Some(daozai::bt::spawn());}
+                if self.bt_rx.is_none() {self.bt_rx=Some(ye_daozai::bt::spawn());}
             } else {
                 self.bt_rx=None;
                 self.bt.clear();
@@ -448,9 +448,9 @@ impl eframe::App for Shell {
             if let Some(rx)=&self.incoming {
                 rx.taskbar_settings(&self.app.settings);
                 while let Ok(event)=rx.try_recv(){match event {
-                    daozai::system::Incoming::Revoked=>{self.app.settings.read_notifications=false;self.app.settings.save();},
-                    daozai::system::Incoming::Status(s)=>self.app.listener_status=s,
-                    daozai::system::Incoming::Message(a,id,b,target)=>{
+                    ye_daozai::system::Incoming::Revoked=>{self.app.settings.read_notifications=false;self.app.settings.save();},
+                    ye_daozai::system::Incoming::Status(s)=>self.app.listener_status=s,
+                    ye_daozai::system::Incoming::Message(a,id,b,target)=>{
                         if target.is_some_and(|target|self.messengers.track(target)==Err(OpenError::Exited)){continue;}
                         self.app.receive_notification_from(a,id,b,target.map(|target|target.unread));
                     }
@@ -517,7 +517,7 @@ impl eframe::App for Shell {
             let (mail_enabled,mail_interval)=(self.app.mail_active(),self.app.settings.mail_interval);
             if !self.mail_sig.as_ref().is_some_and(|known|(known.0,known.1)==(mail_enabled,mail_interval) && known.2.as_slice()==self.app.mail_accounts()){
                 let sig=(mail_enabled,mail_interval,self.app.mail_accounts().to_vec());
-                let accounts:&[daozai::mail::Account]=if sig.0{ &sig.2 }else{ &[] };
+                let accounts:&[ye_daozai::mail::Account]=if sig.0{ &sig.2 }else{ &[] };
                 mail.sync(accounts,sig.1);
                 self.mail_sig=Some(sig);
             }
@@ -526,7 +526,7 @@ impl eframe::App for Shell {
         // 日程连接或自动同步开关变化时下发给工作线程。
         // 录制/截图演示用的是假账号，别让真服务去连（会立刻失败、把状态改成红色）。
         #[cfg(feature="record")]
-        let cal_demo=std::env::var("DAOZAI_CAL_DEMO").is_ok();
+        let cal_demo=std::env::var("YE_DAOZAI_CAL_DEMO").is_ok();
         #[cfg(not(feature="record"))]
         let cal_demo=false;
         if let Some(service)=&self.cal {
@@ -539,7 +539,7 @@ impl eframe::App for Shell {
             }
             while let Some(ev)=service.try_recv(){self.app.calendar_event(ev);}
         }
-        #[cfg(feature="record")] let quota_demo=std::env::var("DAOZAI_QUOTA_DEMO").is_ok();
+        #[cfg(feature="record")] let quota_demo=std::env::var("YE_DAOZAI_QUOTA_DEMO").is_ok();
         #[cfg(not(feature="record"))] let quota_demo=false;
         if !quota_demo {
             let (active,config)=(self.app.quota_active(),self.app.quota_config());
@@ -555,7 +555,7 @@ impl eframe::App for Shell {
             .frame(egui::Frame::new().fill(Color32::TRANSPARENT))
             .show(ctx, |ui| {
                 // 左右停靠时画布是竖向的 SIDE_W × SIDE_H。
-                let size=if self.app.settings.dock.is_side() {egui::vec2(daozai::side_dock::SIDE_W,daozai::side_dock::SIDE_H)} else {egui::vec2(app::WIN_W,app::WIN_H)};
+                let size=if self.app.settings.dock.is_side() {egui::vec2(ye_daozai::side_dock::SIDE_W,ye_daozai::side_dock::SIDE_H)} else {egui::vec2(app::WIN_W,app::WIN_H)};
                 let win = egui::Rect::from_min_size(ui.max_rect().min,size);
                 out = Some(self.app.frame(ui, win, &env));
             });
@@ -612,16 +612,16 @@ impl eframe::App for Shell {
                         self.app.save_window_before_exit();
                         #[cfg(windows)] if let Some(tray)=&self.tray {tray.exit_process();}
                         std::process::exit(0);
-                    }else{self.app.say("无法重新启动岛仔，请从托盘退出后手动打开");}
+                    }else{self.app.say("无法重新启动椰岛仔，请从托盘退出后手动打开");}
                 }
                 Cmd::Open(p) => {if let Err(e)=open_path(&p){self.app.say(e);}},
                 Cmd::OpenUrl(url)=>{
-                    if let Some(url)=daozai::mail::web_url(&url) {
+                    if let Some(url)=ye_daozai::mail::web_url(&url) {
                         if open_path(std::path::Path::new(&url)).is_err(){self.app.say("无法打开默认浏览器，请检查 Windows 默认应用设置");}
                     }
                 },
                 Cmd::CalendarImport=>{
-                    #[cfg(windows)] match daozai::system::pick_files_for("选择要导入的日历文件（.ics）",true){
+                    #[cfg(windows)] match ye_daozai::system::pick_files_for("选择要导入的日历文件（.ics）",true){
                         Ok(files)=>if !files.is_empty(){
                             let read:Vec<(String,String)>=files.iter().map(|path|{
                                 let name=path.file_name().map(|n|n.to_string_lossy().to_string()).unwrap_or_default();
@@ -634,16 +634,16 @@ impl eframe::App for Shell {
                     }
                 },
                 Cmd::AddFiles=>{
-                    #[cfg(windows)] match daozai::system::pick_files(){Ok(files)=>if !files.is_empty(){self.app.on_drop(files);self.app.show_page(3);},Err(e)=>self.app.say(format!("无法选择文件：{}",e.code()))}
+                    #[cfg(windows)] match ye_daozai::system::pick_files(){Ok(files)=>if !files.is_empty(){self.app.on_drop(files);self.app.show_page(3);},Err(e)=>self.app.say(format!("无法选择文件：{}",e.code()))}
                 },
                 Cmd::DragFile(p)=>{
-                    #[cfg(windows)] if let Err(e)=daozai::system::drag_file(&p){self.app.say(format!("无法拖出文件：{}",e.code()));}
+                    #[cfg(windows)] if let Err(e)=ye_daozai::system::drag_file(&p){self.app.say(format!("无法拖出文件：{}",e.code()));}
                     ctx.input_mut(|i| i.pointer=Default::default());
                 },
                 Cmd::DisconnectNotifications=>{#[cfg(windows)]{self.incoming=None;self.app.settings.read_notifications=false;self.app.settings.save();self.app.listener_status="已断开，不再读取 Windows 通知".into();}},
-                Cmd::Reveal(p)=>{let _=daozai::child_process::spawn(std::process::Command::new("explorer.exe").arg(format!("/select,{}",p.display())));},
+                Cmd::Reveal(p)=>{let _=ye_daozai::child_process::spawn(std::process::Command::new("explorer.exe").arg(format!("/select,{}",p.display())));},
                 Cmd::QuotaChooseFile=>{
-                    #[cfg(windows)] match daozai::system::pick_files_for("选择 AI 账号的登录 JSON 文件",false){Ok(files)=>if let Some(path)=files.into_iter().next(){self.app.quota_set_source(path);},Err(_)=>self.app.say("无法选择登录文件")}
+                    #[cfg(windows)] match ye_daozai::system::pick_files_for("选择 AI 账号的登录 JSON 文件",false){Ok(files)=>if let Some(path)=files.into_iter().next(){self.app.quota_set_source(path);},Err(_)=>self.app.say("无法选择登录文件")}
                 },
                 Cmd::QuotaRefresh=>{
                     if self.quota_at.ready(Duration::from_secs(15)) {
@@ -653,14 +653,14 @@ impl eframe::App for Shell {
                 },
                 Cmd::QuotaConnected=>{self.quota_sig=None;},
                 Cmd::ToggleAutostart=>{
-                    #[cfg(windows)] {let want=!self.autostart;match daozai::tray::set_autostart(want){Ok(())=>self.autostart=want,Err(e)=>self.app.say(e)}}
+                    #[cfg(windows)] {let want=!self.autostart;match ye_daozai::tray::set_autostart(want){Ok(())=>self.autostart=want,Err(e)=>self.app.say(e)}}
                 },
                 Cmd::SetVolume(v)=>{
-                    #[cfg(windows)] daozai::system::set_volume(v);
+                    #[cfg(windows)] ye_daozai::system::set_volume(v);
                     self.volume_quiet=PollClock::now();
                 },
                 Cmd::ToggleMute=>{
-                    #[cfg(windows)] daozai::system::toggle_mute();
+                    #[cfg(windows)] ye_daozai::system::toggle_mute();
                     self.volume_quiet=PollClock::now();
                 },
                 Cmd::Copy(text)=>{ctx.copy_text(text);self.app.say("已复制");},
@@ -668,7 +668,7 @@ impl eframe::App for Shell {
                     #[cfg(windows)] if let Some(tray)=&self.tray{tray.notify(&title,&body,self.app.settings.sound);}
                 },
                 cmd @ (Cmd::RequestNotifications|Cmd::RequestQqNotifications)=>{
-                    #[cfg(windows)] {self.app.settings.qq_only=matches!(cmd,Cmd::RequestQqNotifications);self.app.settings.read_notifications=true;self.app.settings.save();self.incoming=None;match daozai::system::connect_with_settings(ctx.clone(),&self.app.settings){Ok(rx)=>{self.incoming=Some(rx);self.app.listener_status="正在请求 Windows 通知权限…".into();},Err(e)=>self.app.listener_status=format!("Windows 未允许读取通知：{}。需要相应的系统权限或应用身份。",e.code())}}
+                    #[cfg(windows)] {self.app.settings.qq_only=matches!(cmd,Cmd::RequestQqNotifications);self.app.settings.read_notifications=true;self.app.settings.save();self.incoming=None;match ye_daozai::system::connect_with_settings(ctx.clone(),&self.app.settings){Ok(rx)=>{self.incoming=Some(rx);self.app.listener_status="正在请求 Windows 通知权限…".into();},Err(e)=>self.app.listener_status=format!("Windows 未允许读取通知：{}。需要相应的系统权限或应用身份。",e.code())}}
                 },
                 // 模块关闭时设置项已置灰；万一仍有命令到达，只提示，不为它临时启动服务。
                 Cmd::MailSync=>if let Some(mail)=&self.mail {
@@ -683,8 +683,8 @@ impl eframe::App for Shell {
                 Cmd::CalendarSync=>match &self.cal {Some(cal)=>cal.sync_now(),None=>self.app.say(MODULE_OFF)},
                 Cmd::CalendarMonth(month)=>if let Some(cal)=&self.cal {cal.view_month(month);},
                 Cmd::CalendarForget=>{
-                    if let Err(error)=daozai::calendar::forget_config(){self.app.say(&error);continue;}
-                    if let Some(old)=self.app.forget_calendar(){daozai::calendar::secrets::delete(&old);}
+                    if let Err(error)=ye_daozai::calendar::forget_config(){self.app.say(&error);continue;}
+                    if let Some(old)=self.app.forget_calendar(){ye_daozai::calendar::secrets::delete(&old);}
                     if let Some(cal)=&self.cal {
                         let configs=self.app.calendar_configs();
                         cal.configure(configs.clone(),self.app.settings.calendar_auto_sync);
@@ -710,15 +710,15 @@ impl eframe::App for Shell {
 
 /// 额度线程只关心总开关和账号身份；别名、置顶只影响显示，改了不重新查询。
 /// `enabled` 是生效的开关：AI 额度模块开启且额度设置里打开。
-fn quota_sig(enabled:bool,config:&daozai::quota::Config)->(bool,Vec<daozai::quota::Account>){
+fn quota_sig(enabled:bool,config:&ye_daozai::quota::Config)->(bool,Vec<ye_daozai::quota::Account>){
     (enabled,config.accounts.iter().cloned().map(|mut a|{a.alias.clear();a.pinned=false;a}).collect())
 }
 
 /// 与 `quota_sig(enabled,config)==*known` 等价，但每帧调用时不复制账号。
-fn quota_sig_matches(known:&(bool,Vec<daozai::quota::Account>),enabled:bool,config:&daozai::quota::Config)->bool{
+fn quota_sig_matches(known:&(bool,Vec<ye_daozai::quota::Account>),enabled:bool,config:&ye_daozai::quota::Config)->bool{
     known.0==enabled && known.1.len()==config.accounts.len() && known.1.iter().zip(&config.accounts).all(|(known,current)|{
         // 不用 `..`：账号新增字段时这里会编译失败，提醒决定新字段是否需要重新查询。
-        let daozai::quota::Account{id,provider,alias:_,source,slot,enabled,pinned:_}=current;
+        let ye_daozai::quota::Account{id,provider,alias:_,source,slot,enabled,pinned:_}=current;
         known.id==*id && known.provider==*provider && known.source==*source && known.slot==*slot && known.enabled==*enabled
     })
 }
@@ -726,10 +726,10 @@ fn quota_sig_matches(known:&(bool,Vec<daozai::quota::Account>),enabled:bool,conf
 #[cfg(test)]
 mod quota_sig_tests {
     use super::*;
-    use daozai::quota::{Account,Config};
+    use ye_daozai::quota::{Account,Config};
 
     fn account(id:&str)->Account{
-        Account{id:id.into(),provider:daozai::quota::Provider::Claude,alias:"工作".into(),source:"a.json".into(),slot:None,enabled:true,pinned:false}
+        Account{id:id.into(),provider:ye_daozai::quota::Provider::Claude,alias:"工作".into(),source:"a.json".into(),slot:None,enabled:true,pinned:false}
     }
 
     #[test]
@@ -885,7 +885,7 @@ mod open_path_tests {
 
     #[test]
     fn unassociated_files_offer_open_with_and_cancellation_is_normal(){
-        let path=std::env::temp_dir().join(format!("岛仔 无关联-{}.daozai-open-test",std::process::id()));
+        let path=std::env::temp_dir().join(format!("椰岛仔 无关联-{}.ye-daozai-open-test",std::process::id()));
         std::fs::write(&path,b"fixture").unwrap();
         for cancel in [false,true]{
             let mut chosen=false;
@@ -899,7 +899,7 @@ mod open_path_tests {
 
     #[test]
     fn default_apps_urls_and_other_errors_never_open_the_file_picker(){
-        let file=std::env::temp_dir().join(format!("daozai-open-errors-{}",std::process::id()));
+        let file=std::env::temp_dir().join(format!("ye-daozai-open-errors-{}",std::process::id()));
         std::fs::write(&file,b"fixture").unwrap();
         for result in [Ok(()),Err(error(ERROR_ACCESS_DENIED)),Err(error(ERROR_FILE_NOT_FOUND))]{
             let success=result.is_ok();
@@ -911,9 +911,9 @@ mod open_path_tests {
         for (path,result,success) in [
             ("https://example.com",Ok(()),true),
             ("https://example.com",Err(error(ERROR_NO_ASSOCIATION)),false),
-            ("missing.daozai-open-test",Err(error(ERROR_NO_ASSOCIATION)),false),
-            ("missing.daozai-open-test",Err(error(ERROR_FILE_NOT_FOUND)),false),
-            ("blocked.daozai-open-test",Err(error(ERROR_ACCESS_DENIED)),false),
+            ("missing.ye-daozai-open-test",Err(error(ERROR_NO_ASSOCIATION)),false),
+            ("missing.ye-daozai-open-test",Err(error(ERROR_FILE_NOT_FOUND)),false),
+            ("blocked.ye-daozai-open-test",Err(error(ERROR_ACCESS_DENIED)),false),
         ]{
             let actual=open_path_result(std::path::Path::new(path),result,||panic!("非文件关联问题不能弹出打开方式"));
             assert_eq!(actual.is_ok(),success);
@@ -926,7 +926,7 @@ fn main() -> std::process::ExitCode {
     match run() {
         Ok(()) => std::process::ExitCode::SUCCESS,
         Err(error) => {
-            diagnostics::report("岛仔启动或运行失败。", &error.to_string());
+            diagnostics::report("椰岛仔启动或运行失败。", &error.to_string());
             std::process::ExitCode::FAILURE
         }
     }
@@ -937,17 +937,17 @@ fn run() -> eframe::Result<()> {
     diagnostics::wait_for_previous_instance();
     // 单实例（与原版同名互斥体）
     #[cfg(windows)]
-    if !daozai::tray::single_instance() {
-        if !daozai::tray::activate_existing(std::env::args().any(|arg|arg=="--calendar")) {
-            diagnostics::report("岛仔已在运行，但暂时无法打开窗口。\n请稍后重试；若仍无法打开，请在任务管理器的“详细信息”中结束 daozai.exe 后重试。", "已有实例可能正在启动或已无响应。请稍后重试；若仍无法打开，请在任务管理器的“详细信息”中结束 daozai.exe，再重新启动。");
+    if !ye_daozai::tray::single_instance() {
+        if !ye_daozai::tray::activate_existing(std::env::args().any(|arg|arg=="--calendar")) {
+            diagnostics::report("椰岛仔已在运行，但暂时无法打开窗口。\n请稍后重试；若仍无法打开，请在任务管理器的“详细信息”中结束 ye-daozai.exe 后重试。", "已有实例可能正在启动或已无响应。请稍后重试；若仍无法打开，请在任务管理器的“详细信息”中结束 ye-daozai.exe，再重新启动。");
         }
         return Ok(());
     }
     #[cfg(windows)]
-    std::thread::spawn(daozai::record_install_size);
+    std::thread::spawn(ye_daozai::record_install_size);
     diagnostics::startup("初始化图形窗口");
     let viewport = egui::ViewportBuilder::default()
-        .with_title("岛仔").with_icon(daozai::theme::app_icon())
+        .with_title("椰岛仔").with_icon(ye_daozai::theme::app_icon())
         .with_inner_size([app::CANVAS_W, app::WIN_H])
         .with_decorations(false)
         .with_transparent(true)
@@ -957,5 +957,5 @@ fn run() -> eframe::Result<()> {
         .with_always_on_top()
         .with_visible(false);
     let opts = eframe::NativeOptions { viewport, vsync: !cfg!(windows), ..Default::default() };
-    graphics::run(opts,|opts|eframe::run_native("岛仔", opts, Box::new(|cc| Ok(Box::new(Shell::new(cc))))))
+    graphics::run(opts,|opts|eframe::run_native("椰岛仔", opts, Box::new(|cc| Ok(Box::new(Shell::new(cc))))))
 }

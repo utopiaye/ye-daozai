@@ -82,8 +82,8 @@ impl App {
         let folder=if self.mail.manage.reader_trash{crate::mail_manage::Folder::Trash}else{crate::mail_manage::Folder::Inbox};
         let ready=self.mail_reader_ready(&raw,folder);
         let seen=self.mail_seen(&raw,folder)==Some(true);
-        ctx.show_viewport_immediate(egui::ViewportId::from_hash_of("daozai-mail-reader"),
-            egui::ViewportBuilder::default().with_title("邮件全文 · 岛仔").with_inner_size([700.0,620.0]).with_min_inner_size([500.0,380.0]),|ctx,_|{
+        ctx.show_viewport_immediate(egui::ViewportId::from_hash_of("ye-daozai-mail-reader"),
+            egui::ViewportBuilder::default().with_title("邮件全文 · 椰岛仔").with_inner_size([700.0,620.0]).with_min_inner_size([500.0,380.0]),|ctx,_|{
             if focus{ctx.send_viewport_cmd(egui::ViewportCommand::Focus);}
             close=ctx.input(|i|i.viewport().close_requested());
             if raw.code.is_some(){ctx.request_repaint_after(std::time::Duration::from_secs(1));}

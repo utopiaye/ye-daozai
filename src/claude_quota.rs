@@ -8,8 +8,8 @@ use std::{fs,path::{Path,PathBuf}};
 mod desktop_cache;
 
 const HISTORY:&str="plan-usage-history.json";
-const CODE_USAGE:&str="daozai-usage.json";
-const COLLECTOR:&str="daozai-statusline.ps1";
+const CODE_USAGE:&str="ye-daozai-usage.json";
+const COLLECTOR:&str="ye-daozai-statusline.ps1";
 pub(super) struct Profile {pub slot:String,pub label:String}
 
 pub(super) fn paths(roaming:&Path,local:&Path)->Vec<PathBuf>{
@@ -68,7 +68,7 @@ fn desktop_record(path:&Path,account:Option<&Account>,verified_cache:&Path)->Res
             snapshot.windows.push(Window{label:label.into(),seconds:Some(seconds),remaining:(100.0-used) as f32,reset:None,amount:None});
         }
     }
-    // 历史和浏览器缓存均按组织保存。账号配置较新时，只能回显岛仔已为该账号核验过的快照。
+    // 历史和浏览器缓存均按组织保存。账号配置较新时，只能回显椰岛仔已为该账号核验过的快照。
     if let Some(cached)=desktop_cache::read(&path.with_file_name("Cache").join("Cache_Data"),org,snapshot.at,now/1000)
         .filter(|s|s.at*1000>login_stamp){
         snapshot=cached;
@@ -123,7 +123,7 @@ pub(super) fn install_code_collector(path:&Path)->Result<(),String>{
         return Err("Claude Code 已有状态栏配置，已保留；可选择现有脚本导出的本地用量 JSON".into());
     }
     let needs_status_line=settings["statusLine"].is_null();
-    let script_content=format!("\u{feff}{}",include_str!("../scripts/claude-statusline.ps1"));
+    let script_content=format!("\u{feff}{}",include_str!("../scripts/ye-daozai-statusline.ps1"));
     crate::model::atomic_write(&script,script_content.as_bytes()).map_err(|_|"无法保存 Claude 本地采集脚本".to_string())?;
     if !needs_status_line{return Ok(());}
     settings["statusLine"]=json!({"type":"command","command":command});
@@ -155,7 +155,7 @@ mod tests {
             assert_eq!(fs::read(&account.source).unwrap(),identity);assert_eq!(fs::read(history_path).unwrap(),history);count+=1;
         }assert!(count>0,"尚无已绑定的 Claude 桌面版账号");
     }
-    fn dir()->PathBuf{let p=std::env::temp_dir().join(format!("daozai-local-claude-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));fs::create_dir_all(&p).unwrap();p}
+    fn dir()->PathBuf{let p=std::env::temp_dir().join(format!("ye-daozai-local-claude-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));fs::create_dir_all(&p).unwrap();p}
     fn earlier_login(path:&Path){
         let stamp=std::time::SystemTime::now()-std::time::Duration::from_secs(300);
         fs::File::options().write(true).open(path).unwrap().set_modified(stamp).unwrap();
@@ -173,7 +173,7 @@ mod tests {
         // 退出只保存窗口状态，账号标识没有变化。
         fs::write(&path,json!({"lastKnownAccountUuid":"owner","windowBounds":{"width":1200}}).to_string()).unwrap();
         let (_,after)=desktop_record(&path,Some(&saved),&cache).expect("已绑定账号退出后仍应显示自己的历史记录");assert_eq!((after.at,&after.windows),(before.at,&before.windows));assert_eq!(fs::read_to_string(dir.join(HISTORY)).unwrap(),history);
-        let (_,restored)=desktop_record(&path,Some(&saved.clone()),&cache).unwrap();assert_eq!((restored.at,&restored.windows),(before.at,&before.windows),"岛仔重新启动后也应保留历史额度");
+        let (_,restored)=desktop_record(&path,Some(&saved.clone()),&cache).unwrap();assert_eq!((restored.at,&restored.windows),(before.at,&before.windows),"椰岛仔重新启动后也应保留历史额度");
         fs::write(&path,json!({"lastKnownAccountUuid":"different-owner"}).to_string()).unwrap();assert!(fetch(&saved).is_err(),"真正切换账号后不能继续读取当前来源的历史");let _=fs::remove_dir_all(dir);
     }
     #[test]
@@ -278,7 +278,7 @@ mod tests {
     }
     #[test]
     fn local_desktop_history_works_without_a_login_token_and_keeps_the_record_time(){
-        let dir=std::env::temp_dir().join(format!("daozai-local-claude-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
+        let dir=std::env::temp_dir().join(format!("ye-daozai-local-claude-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
         fs::create_dir_all(&dir).unwrap();let source=dir.join("config.json");
         let identity=serde_json::json!({"lastKnownAccountUuid":"local-user","oauth:tokenCacheV2":"unreadable-token"}).to_string();
         fs::write(&source,&identity).unwrap();earlier_login(&source);

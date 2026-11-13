@@ -41,7 +41,7 @@ pub struct Observation {
 /// 跨进程输入法查询和 COM 状态采样留在后台，只在状态改变时唤醒界面。
 pub fn observe(ctx:eframe::egui::Context,initial:Snapshot,input:Option<crate::input::State>)->Receiver<Observation> {
     let(tx,rx)=mpsc::sync_channel(1);
-    std::thread::Builder::new().name("daozai-system".into()).spawn(move||{
+    std::thread::Builder::new().name("ye-daozai-system".into()).spawn(move||{
         let mut current=Observation{system:initial,input,fullscreen:None};
         let mut delivered=None;
         let mut sampled=crate::poll_clock::PollClock::default();
@@ -415,7 +415,7 @@ fn connect_inner(ctx:eframe::egui::Context,filter:crate::messenger::Notification
     let (tx, rx) = mpsc::sync_channel(32);
     let (stop, stopped)=mpsc::channel();
     let taskbar_mask=std::sync::Arc::new(std::sync::atomic::AtomicU8::new(mask));let worker_mask=taskbar_mask.clone();
-    std::thread::Builder::new().name("daozai-notifications".into()).spawn(move || {
+    std::thread::Builder::new().name("ye-daozai-notifications".into()).spawn(move || {
         let send=|event|{
             let result=tx.send(event);
             if result.is_ok(){ctx.request_repaint();}
@@ -709,7 +709,7 @@ mod tests {
             use windows::Win32::System::Ole::{OleInitialize, OleUninitialize, CF_HDROP};
             let initialized = OleInitialize(None).is_ok();
             let path =
-                std::env::temp_dir().join(format!("daozai-drag-test-{}.txt", std::process::id()));
+                std::env::temp_dir().join(format!("ye-daozai-drag-test-{}.txt", std::process::id()));
             std::fs::write(&path, "test").unwrap();
             {
                 let data = file_data_object(&path).unwrap();

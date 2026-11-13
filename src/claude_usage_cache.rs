@@ -136,7 +136,7 @@ pub(super) fn fixture(path:&Path,org:&str,at:i64,body:&[u8]){
 mod tests{
     use super::*;
     use serde_json::json;
-    fn dir()->std::path::PathBuf{let path=std::env::temp_dir().join(format!("daozai-usage-cache-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));std::fs::create_dir_all(&path).unwrap();path}
+    fn dir()->std::path::PathBuf{let path=std::env::temp_dir().join(format!("ye-daozai-usage-cache-{}",std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));std::fs::create_dir_all(&path).unwrap();path}
     fn body(at:i64)->Vec<u8>{serde_json::to_vec(&json!({"five_hour":{"utilization":24,"resets_at":chrono::DateTime::from_timestamp(at+3600,0).unwrap().to_rfc3339()},"seven_day":{"utilization":84,"resets_at":chrono::DateTime::from_timestamp(at+86400,0).unwrap().to_rfc3339()}})).unwrap()}
     #[test]
     fn desktop_cache_reads_official_reset_times_without_changing_files(){

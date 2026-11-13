@@ -17,8 +17,8 @@
 
 ## 安全与性能
 
-- 岛仔只调用指定额度查询接口，但不会缩减 Key 本身已有的权限；不要把普通 API Key 宣传为只读 Key。
-- Key 只进入 Windows 凭据管理器 `Daozai.ApiQuota`。配置和缓存只保存随机凭据引用、协议与地址/地区；日志及错误不回显响应正文或 Key。
+- 椰岛仔只调用指定额度查询接口，但不会缩减 Key 本身已有的权限；不要把普通 API Key 宣传为只读 Key。
+- Key 只进入 Windows 凭据管理器 `YeDaozai.ApiQuota`。配置和缓存只保存随机凭据引用、协议与地址/地区；日志及错误不回显响应正文或 Key。
 - 验证异步执行且最多一项在途；取消后仍等待当前有界请求结束，不累计线程。取消阻止后续 One API 请求和 Key 保存。切换服务清空输入中的 Key。连接/移除先持久化配置，再清理旧凭据。清理日志仅存随机引用，写入失败不继续修改；清理失败保留引用供重试。启动清理必须严格确认已保存配置可读、结构有效，不把配置损坏视为空账号。
 - 共享既有代理设置，禁用重定向，解码后响应上限 1 MiB。自动识别总预算 15 秒，单次连接和请求使用剩余预算且不超过 5 秒；界面到期即取消并丢弃结果。系统 DNS 阻塞可能延迟在途线程退出，仍保持单项验证，不累计线程。手动指定及日常刷新沿用 15 秒请求超时，One API 两次顺序请求总耗时可能约 30 秒。
 - 每个新增协议有独立单线程队列；最新刷新覆盖尚未开始的旧请求，不累积无界线程，不等待其他协议完成。原有浏览器类服务维持同组串行。
@@ -49,7 +49,7 @@
 
 新增 34 个合成测试全部通过，覆盖套餐解析、金额/单位、未知和无限、响应错误、地址安全、缓存来源绑定、旧缓存兼容、队列合并及晚到结果过滤。
 
-原始实现的 Linux `cargo build --locked --bin daozai` 被 main.rs 两处既有 Windows-only `system_state` 引用阻挡；`--lib` 测试被既有 WorkBuddy 手工登录测试引用 Windows-only login 模块阻挡。为继续验证，另建一次性副本，仅为以上三处增加平台条件；这些平台兼容调整没有加入本补丁。
+原始实现的 Linux `cargo build --locked --bin ye-daozai` 被 main.rs 两处既有 Windows-only `system_state` 引用阻挡；`--lib` 测试被既有 WorkBuddy 手工登录测试引用 Windows-only login 模块阻挡。为继续验证，另建一次性副本，仅为以上三处增加平台条件；这些平台兼容调整没有加入本补丁。
 
 最终修正版在该验证副本执行 `cargo test --locked --all-targets --features record --no-fail-fast -- --test-threads=1`，其中 library 测试：663 通过、4 失败、58 忽略。四个失败已在干净 main 的独立基线副本复现，位置和断言值一致：
 - 日历日期横向留白（ui_tests.rs:3469）
@@ -64,15 +64,15 @@
 Windows 隔离环境仍需执行仓库要求：
 
 ```
-cargo build --locked --bin daozai
+cargo build --locked --bin ye-daozai
 cargo test --locked --all-targets --features record -- --test-threads=1
 ```
 
-Windows 验收另用临时 `DAOZAI_DATA_DIR`；不运行 ignore 的私人账号测试。重点测试添加/取消/关闭/重复点击/切换协议和地区、重连失败与配置写失败、无权限/超时/限流/重定向、慢中转与旧服务同时刷新、缓存冷启动、全部现有额度供应商及皮肤/缩放布局。真实账号验收需要单独授权。
+Windows 验收另用临时 `YE_DAOZAI_DATA_DIR`；不运行 ignore 的私人账号测试。重点测试添加/取消/关闭/重复点击/切换协议和地区、重连失败与配置写失败、无权限/超时/限流/重定向、慢中转与旧服务同时刷新、缓存冷启动、全部现有额度供应商及皮肤/缩放布局。真实账号验收需要单独授权。
 
 ## 协议来源
 
-- 豆包网页会员：[0011-joe 的 PR #42](https://github.com/Renly1994/xiaotang-daozai/pull/42)，保留原作者提交，针对当前额度页修正和适配。
+- 豆包网页会员：[0011-joe 的 PR #42](https://example.invalid/ye-daozai/pull/42)，保留原作者提交，针对当前额度页修正和适配。
 - OpenCode Go: https://github.com/anomalyco/opencode/blob/d21b0790a6c146815f28fea604e41e922f009590/packages/console/app/src/routes/zen/go/v1/usage.ts
 - MiniMax 官方 CLI: https://github.com/MiniMax-AI/cli/blob/38aba5f26173dd1065b115b221d79c9ddd87c6bb/src/client/endpoints.ts （同提交 schema、types、quota 工具）
 - GLM 官方插件: https://github.com/zai-org/zai-coding-plugins/blob/main/plugins/glm-plan-usage/skills/usage-query-skill/scripts/query-usage.mjs
@@ -92,8 +92,8 @@ Windows 验收另用临时 `DAOZAI_DATA_DIR`；不运行 ignore 的私人账号�
 
 Integrated into the user's main project after verifying the manually downloaded patch SHA-256: `cb2217a2350cb8e6c248c9293464707070c34aec5cbdc83eef108a852b7cae36`. Existing user edits were backed up and preserved. No quota patch file overlapped the user's six modified files. Later concurrent messenger UI tests were preserved as well.
 
-- Existing Rust 1.96.1 MSVC toolchain, Windows SDK and Build Tools only; no software installed. Jobs limited to one. Test data isolated with `DAOZAI_DATA_DIR`.
-- `cargo build --locked --bin daozai --target x86_64-pc-windows-msvc`: passed (debug build).
+- Existing Rust 1.96.1 MSVC toolchain, Windows SDK and Build Tools only; no software installed. Jobs limited to one. Test data isolated with `YE_DAOZAI_DATA_DIR`.
+- `cargo build --locked --bin ye-daozai --target x86_64-pc-windows-msvc`: passed (debug build).
 - Quota-focused library tests with `--features record`: 115 passed, 0 failed, 13 ignored. All 34 new adapter tests passed.
 - Full `--all-targets --features record --no-fail-fast -- --test-threads=1` run: 808 passed, 1 failed, 86 ignored across targets. Two calendar credential integration tests explicitly skipped to avoid system credential operations.
 - The one failure was `ui_tests::ignored_mail_event_hides_stops_reminders_persists_and_restores`, index out of bounds at line 4306. It creates an event at now + 600 seconds but queries today's date. The run and first focused retry occurred before local midnight; the same compiled test passed immediately after midnight with no code change. This is a pre-existing test date-boundary issue, not a clean full-suite pass. The test was not modified because the file contains concurrent user work.
